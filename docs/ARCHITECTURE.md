@@ -58,3 +58,16 @@ envelopes. Uploaded media itself is encrypted in both cases.
 Acknowledged keys replay a receipt. Unknown attempts never automatically resubmit.
 An acknowledgment confirms server acceptance, not recipient playback. Local events
 are service activity, not a remote Snapchat notification feed.
+
+## Inbox polling
+
+`inbox.go` coordinates bounded metadata refresh and changed-conversation reads.
+Activity timestamps and versions identify pending histories; missing timestamps
+have a periodic fallback. The native `inbox_message.mjs` projector emits only
+text and snap metadata. `inbox_events` stores encrypted incoming payloads with
+unique account/conversation/server IDs. `inbox_heads` atomically tracks processed
+windows and persistent gap indicators; `inbox_scans` retains metadata scan progress.
+Account-bound encrypted cursors select the durable log. History failures remain
+pending, while already saved events can still be returned. This is independent
+of the local service event stream and does not implement message pagination or
+push subscriptions.

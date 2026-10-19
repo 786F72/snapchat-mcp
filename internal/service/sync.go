@@ -18,6 +18,7 @@ type Conversation struct {
 	Participants []string `json:"participants"`
 	Title        string   `json:"title,omitempty"`
 	Version      int64    `json:"version"`
+	LastEventAt  int64    `json:"last_event_at,omitempty"`
 }
 
 func uuidString(v *protos.UUID) string {
@@ -92,7 +93,7 @@ func syncMetadata(encoded string) ([]Conversation, error) {
 		if entry.GetIsDeleted() || entry.GetHideFromSendtoAndSearch() {
 			continue
 		}
-		c := Conversation{ID: uuidString(entry.GetVersionInfo().GetConversationId()), Type: entry.GetType().String(), Version: entry.GetVersionInfo().GetConversationVersion(), Participants: []string{}}
+		c := Conversation{LastEventAt: entry.GetLastEventTimestamp(), ID: uuidString(entry.GetVersionInfo().GetConversationId()), Type: entry.GetType().String(), Version: entry.GetVersionInfo().GetConversationVersion(), Participants: []string{}}
 		if c.ID == "" {
 			return nil, fmt.Errorf("incompatible conversation identifier")
 		}

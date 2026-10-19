@@ -20,6 +20,8 @@ import (
 type Store struct {
 	db           *sql.DB
 	accountLocks sync.Map
+	inboxLocks   sync.Map
+	inboxSource  inboxSource
 	vault        Vault
 	mediaMu      sync.RWMutex
 	mediaRoots   []string
@@ -83,7 +85,11 @@ func Open(dir string) (*Store, error) {
  CREATE TABLE IF NOT EXISTS secrets(account_id TEXT PRIMARY KEY REFERENCES accounts(id) ON DELETE CASCADE,sealed BLOB NOT NULL);
  CREATE TABLE IF NOT EXISTS protocol_cursors(account_id TEXT REFERENCES accounts(id) ON DELETE CASCADE,id TEXT NOT NULL,kind TEXT NOT NULL,state BLOB NOT NULL,expires_at INTEGER NOT NULL,PRIMARY KEY(account_id,id));
  CREATE TABLE IF NOT EXISTS media(account_id TEXT REFERENCES accounts(id) ON DELETE CASCADE,id TEXT NOT NULL,sealed BLOB NOT NULL,created_at TEXT NOT NULL,PRIMARY KEY(account_id,id));
- PRAGMA user_version=3;`)
+ CREATE TABLE IF NOT EXISTS inbox_events(seq INTEGER PRIMARY KEY AUTOINCREMENT,account_id TEXT NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,conversation_id TEXT NOT NULL,message_id TEXT NOT NULL,sealed BLOB NOT NULL,UNIQUE(account_id,conversation_id,message_id));
+ CREATE INDEX IF NOT EXISTS inbox_events_account_seq ON inbox_events(account_id,seq);
+ CREATE TABLE IF NOT EXISTS inbox_heads(account_id TEXT NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,conversation_id TEXT NOT NULL,version INTEGER NOT NULL,anchor_id TEXT NOT NULL,event_at INTEGER NOT NULL,checked_at INTEGER NOT NULL,gap_possible INTEGER NOT NULL DEFAULT 0,PRIMARY KEY(account_id,conversation_id));
+ CREATE TABLE IF NOT EXISTS inbox_scans(account_id TEXT PRIMARY KEY REFERENCES accounts(id) ON DELETE CASCADE,cursor TEXT NOT NULL);
+ PRAGMA user_version=4;`)
 	if err != nil {
 		db.Close()
 		return nil, err

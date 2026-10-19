@@ -56,7 +56,7 @@ disabled. Authenticated direct/group preparation passed before live JPEG tests.
   counter does not establish deletion. The test story was not deleted through
   this service.
 - Remote story feeds/viewing, snap opening, accepting requests, group management,
-  search, reactions, quoted replies, batch jobs, and remote event ingestion are
+  search, reactions, quoted replies, batch jobs, and push subscriptions are
   unavailable in the standalone API.
 - Events describe local service changes, not Snapchat notifications.
 - `protocol_ready: false` denotes incomplete overall coverage; consult individual
@@ -110,3 +110,25 @@ A read-only smoke check against the captured local account also passed friend
 search, recipient resolution, cached group lookup, and saved delivery lookup.
 Legacy bootstrap snapshots use their capture timestamp when the separate friend
 sync timestamp is absent; new captures record both timestamps.
+
+## Inbox polling validation (0.3.0)
+
+Fixture tests cover encrypted storage, account-bound and tamper-resistant cursors,
+restart recovery, stable event IDs, duplicate suppression, outgoing filtering,
+post-ingestion exclusions, metadata continuation, bounded work, partial failure
+recovery, and persistent history-gap indicators. Activity timestamps trigger reads
+when the conversation version is unchanged. Missing timestamps get a periodic
+fallback check. HTTP and MCP return equivalent events/checkpoints.
+
+The native event projector is tested separately: text is decoded, snap payloads
+are not decoded, internal media references are never returned, and unstable
+identifiers are rejected. The native runtime network allowlist does not permit
+snap opening, viewing, or read-state mutations for inbox calls.
+
+A bounded live read synchronized metadata and multiple conversation windows,
+returned incoming text events, and replayed their stable IDs from an older
+checkpoint without reinserting duplicates. Snap metadata projection has fixture
+coverage; no live incoming snap was opened for validation. No messages were sent
+and no read receipts were submitted. Expired stored credentials correctly
+reported `reauth_required`; capturing the existing signed-in browser session
+restored polling without changing device keys.

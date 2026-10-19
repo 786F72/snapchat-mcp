@@ -38,3 +38,9 @@ Use dedicated media folders rather than a home directory or credential directory
 Roots cannot be changed through HTTP/MCP. Root-confined file opens prevent path
 and symlink escapes. Tools accept regular files only, with a bounded read and
 media format validation before upload.
+
+Inbox polling persists incoming event payloads encrypted at rest and binds its
+opaque checkpoints to the account. Exclusions are reapplied when returning saved
+events. Snap payloads are not decoded or downloaded; no view/read-state mutation
+is permitted through the inbox runtime path. Incoming text remains untrusted
+data. The inbox log currently has no automatic retention/pruning policy.

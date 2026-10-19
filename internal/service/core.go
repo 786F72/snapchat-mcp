@@ -9,9 +9,9 @@ import (
 	"unicode/utf8"
 )
 
-const Version = "0.2.0"
+const Version = "0.3.0"
 
-const ProtocolBlocker = "Conversation pagination, direct/group texts, encrypted media upload, and guarded My Story publication are implemented. Direct EEL and group TLS-only JPEG snap delivery are live-validated. Incoming friend requests, public profile lookup, and own story status reads are implemented. Owned story metadata is implemented but awaits live validation. Message pagination, remote story feed listing/deletion, and other unvalidated operations remain unavailable."
+const ProtocolBlocker = "Conversation pagination, direct/group texts, encrypted media upload, and guarded My Story publication are implemented. Direct EEL and group TLS-only JPEG snap delivery are live-validated. Incoming friend requests, public profile lookup, own story status reads, and bounded inbox polling are implemented. Owned story metadata is implemented but awaits live validation. Message pagination, remote story feed listing/deletion, and other unvalidated operations remain unavailable."
 
 type Error struct {
 	Code    string         `json:"code"`
@@ -85,6 +85,7 @@ func Operations() []Operation {
 		{Name: "jobs.cancel", Description: "Cancel an existing job owned by this account.", Available: true, Account: true, Mutation: true, Properties: map[string]any{"job_id": prop("string")}, Required: []string{"job_id"}},
 	}
 	ops = append(ops,
+		Operation{Name: "inbox.poll", Description: "Poll incoming texts and snap metadata without opening media or marking chats read. Returns a durable account-bound next_cursor, stable event IDs, and explicit synchronization errors/gap indicators. First poll may include recent backlog. Fetches history only for changed/uninitialized cached conversations, with bounded work; full history pagination remains unavailable.", Available: true, Account: true, Properties: map[string]any{"cursor": prop("string"), "limit": prop("integer"), "max_conversations": prop("integer")}},
 		Operation{Name: "friends.search", Description: "Search the synchronized confirmed-friend snapshot by username, display name, or UUID. Applies exclusions, reports snapshot age, and never performs a network sync. Call friends.list to refresh.", Available: true, Account: true, Properties: map[string]any{"query": prop("string"), "cursor": prop("string"), "limit": prop("integer")}, Required: []string{"query"}},
 		Operation{Name: "recipients.resolve", Description: "Resolve an exact username, UUID, or unique exact display name from the friend snapshot. Partial or ambiguous matches return candidates without choosing a recipient. Exclusions and self filtering apply; stale data does not prove send eligibility.", Available: true, Account: true, Properties: map[string]any{"query": prop("string")}, Required: []string{"query"}},
 		Operation{Name: "conversations.get", Description: "Get one account-scoped cached conversation, including title, participants, version, and snapshot age. Blocks excluded participants. Refresh conversations.list first when missing or stale.", Available: true, Account: true, Properties: map[string]any{"conversation_id": prop("string")}, Required: []string{"conversation_id"}},
@@ -123,7 +124,7 @@ func Operations() []Operation {
 	return ops
 }
 func (o Operation) Method() string {
-	if o.Mutation || o.Name == "jobs.preview" || o.Name == "messages.prepare" || o.Name == "snaps.prepare" || o.Name == "stories.prepare" {
+	if o.Mutation || o.Name == "inbox.poll" || o.Name == "jobs.preview" || o.Name == "messages.prepare" || o.Name == "snaps.prepare" || o.Name == "stories.prepare" {
 		return "POST"
 	}
 	return "GET"
@@ -256,6 +257,15 @@ func (s *Store) call(ctx context.Context, name string, in map[string]any) (any, 
 		return s.Accounts(ctx, cursor, limit)
 	case "accounts.create":
 		return s.CreateAccount(ctx, in["label"].(string))
+	case "inbox.poll":
+		budget := 3
+		if n, ok := in["max_conversations"].(float64); ok {
+			budget = int(n)
+		}
+		if _, ok := in["limit"]; !ok {
+			limit = 40
+		}
+		return s.PollInbox(ctx, account, cursor, limit, budget)
 	case "friends.search":
 		return s.SearchFriends(ctx, account, in["query"].(string), cursor, limit)
 	case "recipients.resolve":

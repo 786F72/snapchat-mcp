@@ -84,7 +84,7 @@ friendships or submit batch jobs.
 - `GET /v1/accounts/{account_id}` returns local account status.
 - Other operations use `/v1/accounts/{account_id}/{family}/{operation}`.
   Reads use GET; writes use POST. `jobs/preview` and the message, snap, and
-  story preparation operations use POST for their inputs; they never submit
+  story preparation operations, and inbox polling use POST for their inputs; they never submit
   messages or publish content.
 - Responses contain `data` or `error: {code, message}`. An account ID in a body or
   query is rejected; HTTP gets it exclusively from the URL. MCP requires it as
@@ -135,7 +135,8 @@ friendships or submit batch jobs.
 | Group creation and membership management | Standalone unavailable |
 | My Story publishing | Implemented; packet preparation validated; explicit friends/custom audience, exclusions enforced |
 | Remote story listing/viewing/deletion | Unavailable |
-| Batch dispatch and remote event ingestion | Unavailable |
+| Inbox polling | Incoming text/snap metadata, durable encrypted log and cursors; bounded recent windows |
+| Batch dispatch and push subscriptions | Unavailable |
 
 The binary also retains legacy browser CLI diagnostics, described in
 [LEGACY.md](LEGACY.md). HTTP and MCP do not invoke these commands. Account
@@ -497,3 +498,12 @@ The feature is disabled by default (`media_root_required`); capabilities reports
 `media_file_upload_enabled`. Relative/outside paths and oversized files fail
 before credential loading or network access. Upload returns a handle and never
 sends or publishes content.
+
+## Inbox polling (0.3.0)
+
+`POST /v1/accounts/{account_id}/inbox/poll` and MCP `snapchat_inbox_poll` accept
+optional `cursor`, `limit` (1–100, default 40), and `max_conversations` (1–5,
+default 3). MCP also requires `account_id`. Each call performs bounded metadata
+and history synchronization and returns incoming text/snap metadata from an
+encrypted durable log. See [INBOX.md](INBOX.md) for cursor semantics, partial
+failures, backlog, and gap limitations. Message history pagination is unchanged.

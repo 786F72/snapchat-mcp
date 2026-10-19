@@ -3,24 +3,25 @@ package service
 // Keep agent-facing descriptions and HTTP/OpenAPI constraints in one registry.
 func enrichOperation(op *Operation) {
 	descriptions := map[string]string{
-		"conversation_id": "Snapchat conversation UUID returned by conversations.list; groups.get requires a user-created group.",
-		"recipient_id":    "Snapchat recipient UUID. Resolve usernames using recipients.resolve first.",
-		"media_id":        "Account-bound handle returned by media.upload or media.upload_file; never an external URL.",
-		"idempotency_key": "Stable caller-chosen key for one logical send. Reuse for retries/status; changing it can send another copy.",
-		"query":           "Username (optional @), display name, or recipient UUID. Local friend snapshot only.",
-		"path":            "Absolute path to a regular file inside a configured --media-root on the HTTP server host.",
-		"mime_type":       "Actual media type; bytes are validated before encryption and upload.",
-		"text":            "Message text, preserved verbatim; sending supports at most 16000 UTF-8 bytes.",
-		"reply_to":        "Unavailable: quoted replies have not been validated; omit this field.",
-		"cursor":          "Opaque continuation value from the same list operation. Friend search uses the last returned friend UUID.",
-		"limit":           "Maximum page size; omitted values use the operation default.",
-		"recipients":      "Explicit recipient identifiers; duplicates are ignored where applicable. This does not resolve usernames.",
-		"label":           "Local account label; registering a label does not sign in to Snapchat.",
-		"content_base64":  "Base64-encoded PNG/JPEG/MP4 bytes, at most 16 MiB decoded. Prefer media.upload_file for local files.",
-		"message_id":      "Stable server message ID returned by message history or a delivery receipt.",
-		"content_id":      "Content identifier returned by the corresponding Snapchat operation.",
-		"audience":        "Choose friends-only My Story or the account's saved custom audience; public story publishing is not supported.",
-		"job_id":          "Account-owned local job ID returned by jobs.list.",
+		"conversation_id":   "Snapchat conversation UUID returned by conversations.list; groups.get requires a user-created group.",
+		"recipient_id":      "Snapchat recipient UUID. Resolve usernames using recipients.resolve first.",
+		"media_id":          "Account-bound handle returned by media.upload or media.upload_file; never an external URL.",
+		"idempotency_key":   "Stable caller-chosen key for one logical send. Reuse for retries/status; changing it can send another copy.",
+		"max_conversations": "Maximum changed conversations whose recent history is fetched in this poll; 1–5, default 3. Unfinished work remains pending.",
+		"query":             "Username (optional @), display name, or recipient UUID. Local friend snapshot only.",
+		"path":              "Absolute path to a regular file inside a configured --media-root on the HTTP server host.",
+		"mime_type":         "Actual media type; bytes are validated before encryption and upload.",
+		"text":              "Message text, preserved verbatim; sending supports at most 16000 UTF-8 bytes.",
+		"reply_to":          "Unavailable: quoted replies have not been validated; omit this field.",
+		"cursor":            "Opaque continuation value from the same list operation. Friend search uses the last returned friend UUID.",
+		"limit":             "Maximum page size; omitted values use the operation default.",
+		"recipients":        "Explicit recipient identifiers; duplicates are ignored where applicable. This does not resolve usernames.",
+		"label":             "Local account label; registering a label does not sign in to Snapchat.",
+		"content_base64":    "Base64-encoded PNG/JPEG/MP4 bytes, at most 16 MiB decoded. Prefer media.upload_file for local files.",
+		"message_id":        "Stable server message ID returned by message history or a delivery receipt.",
+		"content_id":        "Content identifier returned by the corresponding Snapchat operation.",
+		"audience":          "Choose friends-only My Story or the account's saved custom audience; public story publishing is not supported.",
+		"job_id":            "Account-owned local job ID returned by jobs.list.",
 	}
 	for name, value := range op.Properties {
 		original := value.(map[string]any)
@@ -47,11 +48,15 @@ func enrichOperation(op *Operation) {
 			schema["maxLength"] = 16000
 		case "mime_type":
 			schema["enum"] = []string{"image/png", "image/jpeg", "video/mp4"}
+		case "max_conversations":
+			schema["minimum"] = 1
+			schema["maximum"] = 5
+			schema["default"] = 3
 		case "limit":
 			schema["minimum"] = 1
 			schema["maximum"] = 500
 			schema["default"] = 100
-			if op.Name == "messages.list" {
+			if op.Name == "messages.list" || op.Name == "inbox.poll" {
 				schema["maximum"] = 100
 				schema["default"] = 40
 			}
@@ -64,6 +69,9 @@ func enrichOperation(op *Operation) {
 		}
 		if name == "cursor" && op.Name == "messages.list" {
 			schema["description"] = "Unavailable: message history pagination is not yet implemented; omit cursor."
+		}
+		if name == "cursor" && op.Name == "inbox.poll" {
+			schema["description"] = "Opaque account-bound inbox checkpoint. Omit on first poll; always reuse next_cursor, including after empty pages. Survives service restarts."
 		}
 		op.Properties[name] = schema
 	}

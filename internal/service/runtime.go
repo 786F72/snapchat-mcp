@@ -24,8 +24,11 @@ var packetScript string
 //go:embed media_upload.mjs
 var mediaUploadScript string
 
+//go:embed inbox_message.mjs
+var inboxMessageScript string
+
 func nativeClientSource() string {
-	return packetScript + "\n" + mediaUploadScript + "\n" + clientScript
+	return packetScript + "\n" + mediaUploadScript + "\n" + inboxMessageScript + "\n" + clientScript
 }
 
 func (s *Store) ProbeKeys(ctx context.Context, account string) (any, error) {
@@ -178,6 +181,10 @@ func (s *Store) NativeFeed(ctx context.Context, account string) (any, error) {
 }
 
 func (s *Store) NativeMessages(ctx context.Context, account, conversationID, cursor string, limit int) (any, error) {
+	return s.nativeMessages(ctx, account, conversationID, cursor, limit, "messages")
+}
+
+func (s *Store) nativeMessages(ctx context.Context, account, conversationID, cursor string, limit int, operation string) (any, error) {
 	var raw []byte
 	err := s.db.QueryRowContext(ctx, "SELECT data FROM conversations WHERE account_id=? AND id=?", account, conversationID).Scan(&raw)
 	if err != nil {
@@ -206,7 +213,8 @@ func (s *Store) NativeMessages(ctx context.Context, account, conversationID, cur
 	if json.Unmarshal(material, &input) != nil {
 		return nil, fail("invalid_session", "invalid captured session", 409)
 	}
-	input["operation"] = "messages"
+	input["excluded_ids"] = excluded
+	input["operation"] = operation
 	input["conversation_type"] = conversation.Type
 	input["conversation_version"] = conversation.Version
 	input["conversation_id"] = conversationID

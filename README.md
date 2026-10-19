@@ -12,6 +12,7 @@ pinned Snapchat web runtime assets and implements a limited set of operations.
 | --- | --- |
 | Accounts | Account isolation, encrypted credential capture, standalone refresh |
 | Contacts | Confirmed friends, local search/resolution, incoming requests, public identity, exclusions |
+| Inbox | Cursor-based polling for incoming texts and snap metadata; no viewing/read receipts |
 | Conversations | Paginated metadata, cached conversation/group lookup, text history |
 | Texts | Direct EEL and group transport-encrypted sending with durable idempotency |
 | Media | Encrypted PNG/JPEG and H.264/AAC MP4 uploads from bytes or allowed local files |
@@ -95,6 +96,19 @@ MCP reads the local token file; do not put its value in client configuration.
 Account-scoped tools require `account_id`. Names include `snapchat_friends_list`,
 `snapchat_messages_send`, and `snapchat_snaps_send`.
 
+## Poll the inbox
+
+Call `snapchat_inbox_poll` with `account_id` (optional `limit`, default 40;
+`max_conversations`, default 3). Pass the returned `next_cursor` on subsequent
+calls, including after empty pages. Cursors survive service restarts. Replaying
+a cursor can replay events; use stable `event_id` values to deduplicate.
+
+The first poll may include recent backlog. Check `sync.errors`,
+`sync.more_work`, and `sync.history_gap_possible` before interpreting an empty
+page as no activity. Polling fetches bounded recent windows; full message history
+pagination remains unavailable. Snap events contain metadata only and polling
+never opens media or marks chats read. See [inbox details](docs/INBOX.md).
+
 ## Tools for common tasks
 
 - `snapchat_friends_search` / `snapchat_recipients_resolve`: find usernames or names
@@ -125,6 +139,7 @@ full catalog. See [the changelog](CHANGELOG.md) for interface changes.
 
 - [HTTP API, MCP, sending, media, and errors](docs/API.md)
 - [Validation and limitations](docs/STANDALONE.md)
+- [Inbox polling](docs/INBOX.md)
 - [Architecture](docs/ARCHITECTURE.md)
 - [Legacy browser diagnostics](docs/LEGACY.md)
 - [Publication](docs/PUBLISHING.md)

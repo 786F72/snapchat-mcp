@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.3.0 — 2026-10-19
+
+- Added `inbox.poll` / `snapchat_inbox_poll` for incoming texts and snap metadata.
+- Persisted encrypted events and account-bound cursors for restart/reconnects.
+- Added bounded metadata scanning, activity/version change detection, duplicate
+  suppression, exclusions, partial-failure reporting, and history-gap indicators.
+- Polling does not open snaps, download media, mark chats read, or send messages.
+- Full message history pagination remains unavailable; this implements inbox
+  polling only.
+
 ## 0.2.0 — 2026-10-19
 
 - Added local confirmed-friend search and recipient resolution with ambiguity and

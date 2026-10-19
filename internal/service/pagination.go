@@ -58,7 +58,7 @@ func decodeEntries(entries []*protos.ConversationEntry) ([]Conversation, error) 
 		if entry.GetIsDeleted() || entry.GetHideFromSendtoAndSearch() {
 			continue
 		}
-		c := Conversation{ID: uuidString(entry.GetVersionInfo().GetConversationId()), Type: entry.GetType().String(), Version: entry.GetVersionInfo().GetConversationVersion(), Title: entry.GetTitle(), Participants: []string{}}
+		c := Conversation{LastEventAt: entry.GetLastEventTimestamp(), ID: uuidString(entry.GetVersionInfo().GetConversationId()), Type: entry.GetType().String(), Version: entry.GetVersionInfo().GetConversationVersion(), Title: entry.GetTitle(), Participants: []string{}}
 		if c.ID == "" || seen[c.ID] {
 			return nil, fail("incompatible_protocol", "missing or duplicate conversation identifier", 502)
 		}
