@@ -1,0 +1,41 @@
+# Build outputs and caches
+/bin/
+/dist/
+/snapchat-mcp
+/qq_snap
+/node_modules/
+__pycache__/
+*.pyc
+*.test
+coverage.out
+# Private runtime, credentials, and account data
+/.qq_snap-service/
+/data/
+/runtime/
+/captures/
+/replies/
+.env
+.env.*
+token
+*.db
+*.db-*
+*.sqlite
+*.sqlite-*
+*.sqlite3
+*.sqlite3-*
+*.har
+*.jsonl
+*.log
+*.pem
+*.key
+*.png
+*.jpg
+*.jpeg
+*.mp4
+*.wasm
+*.json
+!/docs/openapi.json
+# Editors and OS files
+.DS_Store
+.idea/
+.vscode/
