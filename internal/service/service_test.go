@@ -166,8 +166,7 @@ func TestVaultAccountBinding(t *testing.T) {
 	}
 }
 func TestMCPHTTPParity(t *testing.T) {
-	s := testStore(t)
-	a := account(t, s, "one")
+	s, a, _ := lookupFixture(t)
 	if _, err := s.db.Exec("INSERT INTO deliveries VALUES(?,?,?,?,?,?)", a.ID, "replay", sendHash("conversation", "text", ""), "sent", []byte(`{"acknowledged":true}`), now()); err != nil {
 		t.Fatal(err)
 	}
@@ -188,7 +187,7 @@ func TestMCPHTTPParity(t *testing.T) {
 	h := s.Handler("secret")
 	httpServer := httptest.NewServer(h)
 	defer httpServer.Close()
-	server, err := MCPServer(httpServer.URL, "secret")
+	server, err := MCPServer(httpServer.URL, "secret", MCPOptions{IncludeUnavailable: true})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -226,6 +225,15 @@ func TestMCPHTTPParity(t *testing.T) {
 		name, method, path, body string
 		args                     map[string]any
 	}{
+
+		{"friends.search", "GET", "/v1/accounts/" + a.ID + "/friends/search?query=sam&limit=1", "", map[string]any{"account_id": a.ID, "query": "sam", "limit": float64(1)}},
+		{"recipients.resolve", "GET", "/v1/accounts/" + a.ID + "/recipients/resolve?query=alice", "", map[string]any{"account_id": a.ID, "query": "alice"}},
+		{"conversations.get", "GET", "/v1/accounts/" + a.ID + "/conversations/get?conversation_id=" + lookupConversation, "", map[string]any{"account_id": a.ID, "conversation_id": lookupConversation}},
+		{"groups.get", "GET", "/v1/accounts/" + a.ID + "/groups/get?conversation_id=" + lookupGroup, "", map[string]any{"account_id": a.ID, "conversation_id": lookupGroup}},
+		{"deliveries.get", "GET", "/v1/accounts/" + a.ID + "/deliveries/get?idempotency_key=replay", "", map[string]any{"account_id": a.ID, "idempotency_key": "replay"}},
+		{"exclusions.add", "POST", "/v1/accounts/" + a.ID + "/exclusions/add", `{"recipient_id":"` + fixtureExcluded + `"}`, map[string]any{"account_id": a.ID, "recipient_id": fixtureExcluded}},
+		{"exclusions.remove", "POST", "/v1/accounts/" + a.ID + "/exclusions/remove", `{"recipient_id":"` + fixtureBob + `"}`, map[string]any{"account_id": a.ID, "recipient_id": fixtureBob}},
+		{"media.upload_file", "POST", "/v1/accounts/" + a.ID + "/media/upload_file", `{"path":"/media/photo.png","mime_type":"image/png"}`, map[string]any{"account_id": a.ID, "path": "/media/photo.png", "mime_type": "image/png"}},
 		{"snaps.send", "POST", "/v1/accounts/" + a.ID + "/snaps/send", `{"conversation_id":"conversation","media_id":"fixture-media","idempotency_key":"replay-snap"}`, map[string]any{"account_id": a.ID, "conversation_id": "conversation", "media_id": "fixture-media", "idempotency_key": "replay-snap"}},
 		{"stories.publish", "POST", "/v1/accounts/" + a.ID + "/stories/publish", `{"media_id":"fixture-media","audience":"friends","idempotency_key":"replay-story"}`, map[string]any{"account_id": a.ID, "media_id": "fixture-media", "audience": "friends", "idempotency_key": "replay-story"}},
 		{"stories.publish", "POST", "/v1/accounts/" + a.ID + "/stories/publish", `{"media_id":"fixture-media","audience":"friends","ignore_exclusions":true,"idempotency_key":"replay-story-override"}`, map[string]any{"account_id": a.ID, "media_id": "fixture-media", "audience": "friends", "ignore_exclusions": true, "idempotency_key": "replay-story-override"}},
@@ -253,6 +261,16 @@ func TestMCPHTTPParity(t *testing.T) {
 		want, _ := json.Marshal(expected)
 		if string(b) != string(want) {
 			t.Fatalf("%s: %s != %s", test.name, b, want)
+		}
+		switch test.name {
+		case "friends.search", "recipients.resolve", "conversations.get", "groups.get", "deliveries.get", "exclusions.add", "exclusions.remove":
+			if actual.Error != nil {
+				t.Fatalf("%s: %v", test.name, actual.Error)
+			}
+		case "media.upload_file":
+			if actual.Error == nil || actual.Error.Code != "media_root_required" {
+				t.Fatal("unconfigured file access must be blocked")
+			}
 		}
 		if test.name == "snaps.send" && actual.Error != nil {
 			t.Fatal("acknowledged snap must replay through HTTP and MCP without sending")

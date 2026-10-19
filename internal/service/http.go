@@ -237,7 +237,7 @@ func OpenAPI() map[string]any {
 	}
 	paths["/v1/health"] = map[string]any{"get": map[string]any{"responses": map[string]any{"200": map[string]any{"description": "Service health; not Snapchat readiness"}}}}
 	paths["/v1/accounts/{account_id}/events/stream"] = map[string]any{"get": map[string]any{"parameters": []any{map[string]any{"name": "account_id", "in": "path", "required": true, "schema": prop("string")}, map[string]any{"name": "cursor", "in": "query", "schema": prop("string")}}, "responses": map[string]any{"200": map[string]any{"description": "Account-scoped local events; resume with Last-Event-ID", "content": map[string]any{"text/event-stream": map[string]any{}}}}}}
-	return map[string]any{"openapi": "3.1.0", "info": map[string]any{"title": "Snapchat MCP local API", "version": "0.1.0"}, "paths": paths, "security": []any{map[string]any{"bearerAuth": []string{}}}, "components": map[string]any{"securitySchemes": map[string]any{"bearerAuth": map[string]any{"type": "http", "scheme": "bearer"}}}}
+	return map[string]any{"openapi": "3.1.0", "info": map[string]any{"title": "Snapchat MCP local API", "version": Version}, "paths": paths, "security": []any{map[string]any{"bearerAuth": []string{}}}, "components": map[string]any{"securitySchemes": map[string]any{"bearerAuth": map[string]any{"type": "http", "scheme": "bearer"}}}}
 }
 func contains(ss []string, s string) bool {
 	for _, v := range ss {

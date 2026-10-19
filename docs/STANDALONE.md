@@ -93,3 +93,20 @@ go test ./internal/service -run TestLiveSnapPreparation -v
 Read adapter validation uses `TestLiveReadActions` with the live account/data
 variables. An optional owned story ID exercises its disabled adapter directly.
 These opt-in checks are excluded from CI.
+
+## Agent helper validation (0.2.0)
+
+Friend search/resolution, cached conversation/group metadata, individual exclusion
+edits, and delivery status lookup are local operations covered by fixture tests
+and HTTP/MCP parity checks. Tests cover account isolation, stale data, ambiguous
+matches, atomic exclusion changes, and receipt redaction.
+
+File uploads use the already validated encrypted upload pipeline after a confined
+local read. Filesystem tests cover disabled roots, outside paths, escaping
+symlinks, directories, empty/oversized files, and media validation before auth.
+No new live sends or uploads were performed for these workflow helpers.
+
+A read-only smoke check against the captured local account also passed friend
+search, recipient resolution, cached group lookup, and saved delivery lookup.
+Legacy bootstrap snapshots use their capture timestamp when the separate friend
+sync timestamp is absent; new captures record both timestamps.

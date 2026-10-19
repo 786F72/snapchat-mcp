@@ -161,6 +161,10 @@ use `--token-file` to locate the same private token. MCP reads it locally; do no
 put the bearer token in client configuration or command arguments. The stdio
 process uses stdout exclusively for MCP protocol messages.
 
+By default, MCP advertises available operations only. Add `--include-unavailable`
+to the `mcp` command to expose reserved operations for development. HTTP/OpenAPI
+and `capabilities.list` retain the complete catalog.
+
 Tool names use `snapchat_{family}_{operation}`, such as
 `snapchat_accounts_create`, `snapchat_exclusions_replace`,
 `snapchat_jobs_preview`, and `snapchat_messages_send`. Each publishes a JSON
@@ -406,3 +410,90 @@ publications in the same account's ledger and discards media/key fields.
 The session expired before this check, and standalone refresh requires an
 interactive login. Missing metadata will be treated as unknown rather than
 proof of deletion when the adapter is enabled.
+
+## Agent workflow helpers (0.2.0)
+
+All operations below also exist as `snapchat_{family}_{operation}` MCP tools.
+They require `account_id` in MCP; HTTP uses the account ID from its URL.
+
+| Operation | HTTP | Inputs | Result |
+| --- | --- | --- | --- |
+| `friends.search` | GET | `query`, optional `cursor`, `limit` | Matching confirmed friends, continuation, snapshot timestamp/staleness |
+| `recipients.resolve` | GET | `query` | `resolved`, `ambiguous`, or `not_found`; candidates and snapshot age |
+| `conversations.get` | GET | `conversation_id` | Cached title, participants, type, version, timestamp/staleness |
+| `groups.get` | GET | `conversation_id` | Same metadata, restricted to user-created groups |
+| `exclusions.add` | POST | `recipient_id` | Canonical UUID, excluded state, whether anything changed |
+| `exclusions.remove` | POST | `recipient_id` | Same; idempotent and preserves unrelated exclusions |
+| `deliveries.get` | GET | `idempotency_key` | State, creation time, redacted receipt, same-key retry eligibility |
+| `media.upload_file` | POST | `path`, `mime_type` | Uploaded account-bound media handle |
+
+### Resolve a recipient
+
+```sh
+curl -sS -G -H "Authorization: Bearer $TOKEN" \
+  --data-urlencode 'query=@sample_user' \
+  "$API/v1/accounts/$ACCOUNT_ID/recipients/resolve"
+```
+
+Search and resolution use the captured or synchronized friend snapshot. Call
+`friends.list` first to refresh it. Snapshot age is reported; stale cached matches
+do not authorize sending. Self and excluded recipients are omitted. Resolution
+prefers exact UUID/username, then a unique exact display name. Duplicate display
+names and all partial matches require explicit selection, even when only one
+partial candidate exists. Resolution returns at most 100 candidates and marks
+truncation; use paginated search to inspect more.
+
+Friend search orders results by recipient UUID. Pass `next_cursor` with the same
+query; it is the last returned friend UUID. Each call searches the current
+snapshot, so concurrent synchronization or exclusion changes may affect pages.
+Cached conversation/group lookups do not perform network requests; synchronize
+`conversations.list` when missing or stale. They block excluded participants.
+
+### Change one exclusion
+
+```sh
+curl -sS -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' \
+  -d '{"recipient_id":"RECIPIENT_UUID"}' \
+  "$API/v1/accounts/$ACCOUNT_ID/exclusions/add"
+```
+
+Use `/exclusions/remove` to remove that UUID. Repeating either action returns
+`changed: false` when already in the requested state. Changes are atomic and do
+not replace other entries or alter Snapchat friendships. The server serializes
+exclusion edits with its own in-flight sends for the account.
+
+### Inspect delivery
+
+```sh
+curl -sS -G -H "Authorization: Bearer $TOKEN" \
+  --data-urlencode 'idempotency_key=photo-request-001' \
+  "$API/v1/accounts/$ACCOUNT_ID/deliveries/get"
+```
+
+`sent` means a matching acknowledgment was saved. `pending`/`unknown` must not be
+retried automatically. Only `not_sent` permits a retry with the same key.
+`can_retry_same_key` reports that distinction; this lookup itself never retries.
+Receipts omit native response frames, keys, and internal diagnostics.
+
+### Upload a local file
+
+Start the HTTP service with one or more dedicated roots:
+
+```sh
+./bin/snapchat-mcp serve --media-root "$HOME/SnapchatMedia"
+```
+
+```sh
+curl -sS -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' \
+  -d '{"path":"/absolute/path/inside/SnapchatMedia/photo.jpg","mime_type":"image/jpeg"}' \
+  "$API/v1/accounts/$ACCOUNT_ID/media/upload_file"
+```
+
+The file is on the HTTP server's host, not necessarily the MCP client's host.
+Paths must be absolute. Regular files only, 1 byte to 16 MiB; file contents must
+match the supplied PNG/JPEG/MP4 MIME type. Root-confined opens block symlink and
+path escapes. Roots are operator settings and cannot be added through a tool.
+The feature is disabled by default (`media_root_required`); capabilities reports
+`media_file_upload_enabled`. Relative/outside paths and oversized files fail
+before credential loading or network access. Upload returns a handle and never
+sends or publishes content.

@@ -6,7 +6,10 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"unicode/utf8"
 )
+
+const Version = "0.2.0"
 
 const ProtocolBlocker = "Conversation pagination, direct/group texts, encrypted media upload, and guarded My Story publication are implemented. Direct EEL and group TLS-only JPEG snap delivery are live-validated. Incoming friend requests, public profile lookup, and own story status reads are implemented. Owned story metadata is implemented but awaits live validation. Message pagination, remote story feed listing/deletion, and other unvalidated operations remain unavailable."
 
@@ -81,6 +84,17 @@ func Operations() []Operation {
 		{Name: "jobs.get", Description: "Get a job owned by this account.", Available: true, Account: true, Properties: map[string]any{"job_id": prop("string")}, Required: []string{"job_id"}},
 		{Name: "jobs.cancel", Description: "Cancel an existing job owned by this account.", Available: true, Account: true, Mutation: true, Properties: map[string]any{"job_id": prop("string")}, Required: []string{"job_id"}},
 	}
+	ops = append(ops,
+		Operation{Name: "friends.search", Description: "Search the synchronized confirmed-friend snapshot by username, display name, or UUID. Applies exclusions, reports snapshot age, and never performs a network sync. Call friends.list to refresh.", Available: true, Account: true, Properties: map[string]any{"query": prop("string"), "cursor": prop("string"), "limit": prop("integer")}, Required: []string{"query"}},
+		Operation{Name: "recipients.resolve", Description: "Resolve an exact username, UUID, or unique exact display name from the friend snapshot. Partial or ambiguous matches return candidates without choosing a recipient. Exclusions and self filtering apply; stale data does not prove send eligibility.", Available: true, Account: true, Properties: map[string]any{"query": prop("string")}, Required: []string{"query"}},
+		Operation{Name: "conversations.get", Description: "Get one account-scoped cached conversation, including title, participants, version, and snapshot age. Blocks excluded participants. Refresh conversations.list first when missing or stale.", Available: true, Account: true, Properties: map[string]any{"conversation_id": prop("string")}, Required: []string{"conversation_id"}},
+		Operation{Name: "groups.get", Description: "Get one cached user-created group and its participants. Blocks excluded members and reports snapshot age. Does not synchronize membership or open messages.", Available: true, Account: true, Properties: map[string]any{"conversation_id": prop("string")}, Required: []string{"conversation_id"}},
+		Operation{Name: "exclusions.add", Description: "Atomically add one recipient UUID to this account's local exclusions without replacing other entries. Idempotent; no friendship or network change.", Available: true, Account: true, Mutation: true, Properties: map[string]any{"recipient_id": prop("string")}, Required: []string{"recipient_id"}},
+		Operation{Name: "exclusions.remove", Description: "Atomically remove one recipient UUID from this account's local exclusions without replacing other entries. Idempotent; no friendship or network change.", Available: true, Account: true, Mutation: true, Properties: map[string]any{"recipient_id": prop("string")}, Required: []string{"recipient_id"}},
+		Operation{Name: "deliveries.get", Description: "Look up this account's durable delivery status by idempotency key. Returns a redacted receipt and same-key retry eligibility; never sends or retries content.", Available: true, Account: true, Properties: map[string]any{"idempotency_key": prop("string")}, Required: []string{"idempotency_key"}},
+		Operation{Name: "media.upload_file", Description: "Encrypt and upload a local PNG/JPEG/MP4 file from an operator-configured media root on the HTTP server host. Requires serve --media-root. Returns a media handle, not file contents or encryption keys. Does not send or publish.", Available: true, Account: true, Mutation: true, Properties: map[string]any{"path": prop("string"), "mime_type": prop("string")}, Required: []string{"path", "mime_type"}},
+	)
+
 	groups := []struct {
 		names      string
 		mutation   bool
@@ -91,7 +105,6 @@ func Operations() []Operation {
 		{"friends.add friends.remove friends.block friends.unblock requests.accept requests.reject", true, map[string]any{"recipient_id": prop("string")}, []string{"recipient_id"}},
 		{"search.users", false, map[string]any{"query": prop("string")}, []string{"query"}},
 		{"stories.list", false, map[string]any{"cursor": prop("string"), "limit": prop("integer")}, nil},
-		{"groups.get", false, map[string]any{"conversation_id": prop("string"), "cursor": prop("string"), "limit": prop("integer")}, []string{"conversation_id"}},
 		{"messages.react messages.save messages.delete", true, map[string]any{"conversation_id": prop("string"), "message_id": prop("string"), "reaction": prop("string"), "idempotency_key": prop("string")}, []string{"conversation_id", "message_id", "idempotency_key"}},
 		{"groups.create", true, map[string]any{"recipients": arrayProp(), "title": prop("string"), "idempotency_key": prop("string")}, []string{"recipients", "idempotency_key"}},
 		{"groups.add_members groups.remove_members", true, map[string]any{"conversation_id": prop("string"), "recipients": arrayProp(), "idempotency_key": prop("string")}, []string{"conversation_id", "recipients", "idempotency_key"}},
@@ -103,6 +116,9 @@ func Operations() []Operation {
 		for _, n := range strings.Fields(g.names) {
 			ops = append(ops, Operation{Name: n, Description: "Unavailable standalone operation: " + n + ". " + ProtocolBlocker, Mutation: g.mutation, Account: true, Properties: g.properties, Required: g.required})
 		}
+	}
+	for i := range ops {
+		enrichOperation(&ops[i])
 	}
 	return ops
 }
@@ -119,7 +135,7 @@ func (o Operation) Schema() map[string]any {
 	}
 	required := append([]string{}, o.Required...)
 	if o.Account {
-		p["account_id"] = prop("string")
+		p["account_id"] = map[string]any{"type": "string", "description": "Local account ID returned by accounts.list or accounts.create; not a Snapchat user UUID.", "minLength": 1, "maxLength": 128}
 		required = append(required, "account_id")
 	}
 	return map[string]any{"type": "object", "properties": p, "required": required, "additionalProperties": false}
@@ -156,6 +172,24 @@ func validate(o Operation, in map[string]any) error {
 			for _, x := range a {
 				str, ok := x.(string)
 				valid = valid && ok && strings.TrimSpace(str) != "" && len(str) <= 128
+			}
+		}
+		bounds := schema.(map[string]any)
+		if text, ok := v.(string); ok {
+			n := utf8.RuneCountInString(text)
+			if min, ok := bounds["minLength"].(int); ok {
+				valid = valid && n >= min
+			}
+			if max, ok := bounds["maxLength"].(int); ok {
+				valid = valid && n <= max
+			}
+		}
+		if n, ok := v.(float64); ok {
+			if min, ok := bounds["minimum"].(int); ok {
+				valid = valid && n >= float64(min)
+			}
+			if max, ok := bounds["maximum"].(int); ok {
+				valid = valid && n <= float64(max)
 			}
 		}
 		if choices, ok := schema.(map[string]any)["enum"].([]string); ok {
@@ -222,6 +256,18 @@ func (s *Store) call(ctx context.Context, name string, in map[string]any) (any, 
 		return s.Accounts(ctx, cursor, limit)
 	case "accounts.create":
 		return s.CreateAccount(ctx, in["label"].(string))
+	case "friends.search":
+		return s.SearchFriends(ctx, account, in["query"].(string), cursor, limit)
+	case "recipients.resolve":
+		return s.ResolveRecipient(ctx, account, in["query"].(string))
+	case "conversations.get", "groups.get":
+		return s.GetConversation(ctx, account, in["conversation_id"].(string), name == "groups.get")
+	case "exclusions.add", "exclusions.remove":
+		return s.ChangeExclusion(ctx, account, in["recipient_id"].(string), name == "exclusions.add")
+	case "deliveries.get":
+		return s.GetDelivery(ctx, account, in["idempotency_key"].(string))
+	case "media.upload_file":
+		return s.UploadMediaFile(ctx, account, in["path"].(string), in["mime_type"].(string))
 	case "requests.list":
 		return s.IncomingRequests(ctx, account, cursor, limit)
 	case "profiles.get":
@@ -271,7 +317,10 @@ func (s *Store) call(ctx context.Context, name string, in map[string]any) (any, 
 	case "accounts.get":
 		return s.Account(ctx, account)
 	case "capabilities.list":
-		return map[string]any{"backend": "standalone", "protocol_ready": false, "messaging_core_validated": true, "coverage_complete": false, "blocker": ProtocolBlocker, "operations": Operations()}, nil
+		s.mediaMu.RLock()
+		fileUploadEnabled := len(s.mediaRoots) > 0
+		s.mediaMu.RUnlock()
+		return map[string]any{"backend": "standalone", "protocol_ready": false, "messaging_core_validated": true, "coverage_complete": false, "blocker": ProtocolBlocker, "operations": Operations(), "media_file_upload_enabled": fileUploadEnabled}, nil
 	case "exclusions.list":
 		return s.Exclusions(ctx, account)
 	case "exclusions.replace":

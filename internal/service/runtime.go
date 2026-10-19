@@ -29,7 +29,7 @@ func nativeClientSource() string {
 }
 
 func (s *Store) ProbeKeys(ctx context.Context, account string) (any, error) {
-	material, err := s.LoadSecret(ctx, OSVault(), account)
+	material, err := s.LoadSecret(ctx, s.vault, account)
 	if err != nil {
 		return nil, fail("reauth_required", "capture this account with snapchat-mcp bootstrap and unlock the OS keyring", 409)
 	}
@@ -90,7 +90,7 @@ func InstallRuntime(ctx context.Context, dir string) error {
 }
 
 func (s *Store) ProbeSession(ctx context.Context, account string) (any, error) {
-	material, err := s.LoadSecret(ctx, OSVault(), account)
+	material, err := s.LoadSecret(ctx, s.vault, account)
 	if err != nil {
 		return nil, fail("reauth_required", "capture this account with snapchat-mcp bootstrap", 409)
 	}
@@ -114,7 +114,7 @@ func (s *Store) ProbeSession(ctx context.Context, account string) (any, error) {
 }
 
 func (s *Store) NativeFeed(ctx context.Context, account string) (any, error) {
-	material, err := s.LoadSecret(ctx, OSVault(), account)
+	material, err := s.LoadSecret(ctx, s.vault, account)
 	if err != nil {
 		return nil, fail("reauth_required", "capture this account with snapchat-mcp bootstrap", 409)
 	}
@@ -198,7 +198,7 @@ func (s *Store) NativeMessages(ctx context.Context, account, conversationID, cur
 			}
 		}
 	}
-	material, err := s.LoadSecret(ctx, OSVault(), account)
+	material, err := s.LoadSecret(ctx, s.vault, account)
 	if err != nil {
 		return nil, fail("reauth_required", "capture this account and unlock the OS keyring", 409)
 	}

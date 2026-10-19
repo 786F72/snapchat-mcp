@@ -76,7 +76,7 @@ func decodeEntries(entries []*protos.ConversationEntry) ([]Conversation, error) 
 }
 func (s *Store) Conversations(ctx context.Context, account, cursor string, limit int) (any, error) {
 	var position conversationCursor
-	vault := OSVault()
+	vault := s.vault
 	if cursor != "" {
 		if err := s.loadCursor(ctx, vault, account, "conversations", cursor, &position); err != nil {
 			return nil, err

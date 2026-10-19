@@ -201,7 +201,7 @@ func (s *Store) SyncFriends(ctx context.Context, account, cursor string, limit i
 }
 
 func (s *Store) syncFriendsLocked(ctx context.Context, account, cursor string, limit int) (any, error) {
-	material, err := s.LoadSecret(ctx, OSVault(), account)
+	material, err := s.LoadSecret(ctx, s.vault, account)
 	if err != nil {
 		return nil, fail("reauth_required", "capture this account and unlock the OS keyring", 409)
 	}
@@ -267,7 +267,7 @@ func (s *Store) syncFriendsLocked(ctx context.Context, account, cursor string, l
 	snapshot.Friends, _ = json.Marshal(friends)
 	snapshot.FriendsSyncedAt = time.Now().UTC().Format(time.RFC3339Nano)
 	material, _ = json.Marshal(snapshot)
-	if err = s.SaveSecret(ctx, OSVault(), account, material); err != nil {
+	if err = s.SaveSecret(ctx, s.vault, account, material); err != nil {
 		return nil, err
 	}
 	excluded, err := s.Exclusions(ctx, account)

@@ -24,7 +24,7 @@ func (s *Store) contentInput(ctx context.Context, account, conversationID, text,
 			return nil, err
 		}
 
-		material, err = s.LoadSecret(ctx, OSVault(), account)
+		material, err = s.LoadSecret(ctx, s.vault, account)
 		if err != nil {
 			return nil, fail("reauth_required", "capture this account and unlock the OS keyring", 409)
 		}

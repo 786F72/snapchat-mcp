@@ -166,7 +166,7 @@ func (s *Store) TestSend(ctx context.Context, account, text, key string) (any, e
 		if _, err = s.NativeFeed(ctx, account); err != nil {
 			return nil, err
 		}
-		material, err := s.LoadSecret(ctx, OSVault(), account)
+		material, err := s.LoadSecret(ctx, s.vault, account)
 		if err != nil {
 			return nil, fail("reauth_required", "capture the account before testing", 409)
 		}
@@ -282,7 +282,7 @@ func (s *Store) messageInput(ctx context.Context, account, conversationID, text,
 			}
 		}
 	}
-	material, err := s.LoadSecret(ctx, OSVault(), account)
+	material, err := s.LoadSecret(ctx, s.vault, account)
 	if err != nil {
 		return nil, fail("reauth_required", "capture the account and unlock the OS keyring", 409)
 	}

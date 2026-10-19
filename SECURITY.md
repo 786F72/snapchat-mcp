@@ -32,3 +32,9 @@ uncertain results first.
 Report vulnerabilities privately to the repository maintainer. Share a synthetic
 reproducer and redacted error codes, never live account material. Do not post
 credential-bearing reports in public issues.
+
+Local file upload is disabled unless the HTTP operator supplies `--media-root`.
+Use dedicated media folders rather than a home directory or credential directory.
+Roots cannot be changed through HTTP/MCP. Root-confined file opens prevent path
+and symlink escapes. Tools accept regular files only, with a bounded read and
+media format validation before upload.

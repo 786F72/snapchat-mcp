@@ -61,6 +61,7 @@ func runBootstrap(ctx context.Context, args []string, out io.Writer) error {
 		IdentityStorage string          `json:"identity_storage"`
 		RootWrappingKey json.RawMessage `json:"root_wrapping_key,omitempty"`
 		CapturedAt      string          `json:"captured_at"`
+		FriendsSyncedAt string          `json:"friends_synced_at,omitempty"`
 		Cookies         json.RawMessage `json:"cookies"`
 		Friends         []Friend        `json:"friends"`
 	}
@@ -92,6 +93,7 @@ func runBootstrap(ctx context.Context, args []string, out io.Writer) error {
 	}
 	snapshot.Version = 1
 	snapshot.CapturedAt = time.Now().UTC().Format(time.RFC3339Nano)
+	snapshot.FriendsSyncedAt = snapshot.CapturedAt
 	material, err := json.Marshal(snapshot)
 	if err != nil {
 		return fmt.Errorf("cannot encode bootstrap")

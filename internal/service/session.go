@@ -69,7 +69,7 @@ func (s *Store) Refresh(ctx context.Context, account string) (any, error) {
 	case <-ctx.Done():
 		return nil, ctx.Err()
 	}
-	vault := OSVault()
+	vault := s.vault
 	material, err := s.LoadSecret(ctx, vault, account)
 	if errors.Is(err, sql.ErrNoRows) {
 		return nil, fail("reauth_required", "capture an interactive login with snapchat-mcp bootstrap first", 409)

@@ -18,7 +18,7 @@ const storyStatusPath = "/ranking.storymanagement.StoryManagementGatewayService/
 
 func (s *Store) readSnapshot(ctx context.Context, account string) (SessionSnapshot, error) {
 	var snapshot SessionSnapshot
-	raw, err := s.LoadSecret(ctx, OSVault(), account)
+	raw, err := s.LoadSecret(ctx, s.vault, account)
 	if err != nil {
 		return snapshot, fail("reauth_required", "capture this account and unlock the OS keyring", 409)
 	}

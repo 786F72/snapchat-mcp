@@ -9,7 +9,7 @@
   },
   "info": {
     "title": "Snapchat MCP local API",
-    "version": "0.1.0"
+    "version": "0.2.0"
   },
   "openapi": "3.1.0",
   "paths": {
@@ -23,6 +23,8 @@
             "name": "cursor",
             "required": false,
             "schema": {
+              "description": "Opaque continuation value from the same list operation. Friend search uses the last returned friend UUID.",
+              "maxLength": 4096,
               "type": "string"
             }
           },
@@ -31,6 +33,10 @@
             "name": "limit",
             "required": false,
             "schema": {
+              "default": 100,
+              "description": "Maximum page size; omitted values use the operation default.",
+              "maximum": 500,
+              "minimum": 1,
               "type": "integer"
             }
           }
@@ -500,6 +506,7 @@
                 "additionalProperties": false,
                 "properties": {
                   "label": {
+                    "description": "Local account label; registering a label does not sign in to Snapchat.",
                     "type": "string"
                   }
                 },
@@ -4289,6 +4296,486 @@
         "x-standalone-available": true
       }
     },
+    "/v1/accounts/{account_id}/conversations/get": {
+      "get": {
+        "description": "Get one account-scoped cached conversation, including title, participants, version, and snapshot age. Blocks excluded participants. Refresh conversations.list first when missing or stale.",
+        "operationId": "conversations.get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "account_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "conversation_id",
+            "required": true,
+            "schema": {
+              "description": "Snapchat conversation UUID returned by conversations.list; groups.get requires a user-created group.",
+              "maxLength": 128,
+              "minLength": 1,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "oneOf": [
+                    {
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "error"
+                      ]
+                    }
+                  ],
+                  "properties": {
+                    "data": {},
+                    "error": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Structured operation result"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "oneOf": [
+                    {
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "error"
+                      ]
+                    }
+                  ],
+                  "properties": {
+                    "data": {},
+                    "error": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Invalid arguments"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "oneOf": [
+                    {
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "error"
+                      ]
+                    }
+                  ],
+                  "properties": {
+                    "data": {},
+                    "error": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "oneOf": [
+                    {
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "error"
+                      ]
+                    }
+                  ],
+                  "properties": {
+                    "data": {},
+                    "error": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Recipient excluded or origin forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "oneOf": [
+                    {
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "error"
+                      ]
+                    }
+                  ],
+                  "properties": {
+                    "data": {},
+                    "error": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Account or resource not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "oneOf": [
+                    {
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "error"
+                      ]
+                    }
+                  ],
+                  "properties": {
+                    "data": {},
+                    "error": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Conflict, uncertain delivery, authentication, or audience verification required"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "oneOf": [
+                    {
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "error"
+                      ]
+                    }
+                  ],
+                  "properties": {
+                    "data": {},
+                    "error": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Upstream rate limit"
+          },
+          "501": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "oneOf": [
+                    {
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "error"
+                      ]
+                    }
+                  ],
+                  "properties": {
+                    "data": {},
+                    "error": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Standalone capability unavailable"
+          },
+          "502": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "oneOf": [
+                    {
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "error"
+                      ]
+                    }
+                  ],
+                  "properties": {
+                    "data": {},
+                    "error": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Upstream protocol or transport failure"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "oneOf": [
+                    {
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "error"
+                      ]
+                    }
+                  ],
+                  "properties": {
+                    "data": {},
+                    "error": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Local vault or runtime unavailable"
+          }
+        },
+        "x-standalone-available": true
+      }
+    },
     "/v1/accounts/{account_id}/conversations/list": {
       "get": {
         "description": "Synchronize conversation metadata through the standalone native client. Does not open snaps or mark chats read.",
@@ -4307,6 +4794,8 @@
             "name": "cursor",
             "required": false,
             "schema": {
+              "description": "Opaque continuation value from the same list operation. Friend search uses the last returned friend UUID.",
+              "maxLength": 4096,
               "type": "string"
             }
           },
@@ -4315,6 +4804,10 @@
             "name": "limit",
             "required": false,
             "schema": {
+              "default": 100,
+              "description": "Maximum page size; omitted values use the operation default.",
+              "maximum": 500,
+              "minimum": 1,
               "type": "integer"
             }
           }
@@ -4795,6 +5288,9 @@
                 "additionalProperties": false,
                 "properties": {
                   "conversation_id": {
+                    "description": "Snapchat conversation UUID returned by conversations.list; groups.get requires a user-created group.",
+                    "maxLength": 128,
+                    "minLength": 1,
                     "type": "string"
                   }
                 },
@@ -5262,6 +5758,489 @@
         "x-standalone-available": false
       }
     },
+    "/v1/accounts/{account_id}/deliveries/get": {
+      "get": {
+        "description": "Look up this account's durable delivery status by idempotency key. Returns a redacted receipt and same-key retry eligibility; never sends or retries content.",
+        "operationId": "deliveries.get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "account_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "idempotency_key",
+            "required": true,
+            "schema": {
+              "description": "Stable caller-chosen key for one logical send. Reuse for retries/status; changing it can send another copy.",
+              "examples": [
+                "photo-request-001"
+              ],
+              "maxLength": 128,
+              "minLength": 1,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "oneOf": [
+                    {
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "error"
+                      ]
+                    }
+                  ],
+                  "properties": {
+                    "data": {},
+                    "error": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Structured operation result"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "oneOf": [
+                    {
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "error"
+                      ]
+                    }
+                  ],
+                  "properties": {
+                    "data": {},
+                    "error": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Invalid arguments"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "oneOf": [
+                    {
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "error"
+                      ]
+                    }
+                  ],
+                  "properties": {
+                    "data": {},
+                    "error": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "oneOf": [
+                    {
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "error"
+                      ]
+                    }
+                  ],
+                  "properties": {
+                    "data": {},
+                    "error": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Recipient excluded or origin forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "oneOf": [
+                    {
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "error"
+                      ]
+                    }
+                  ],
+                  "properties": {
+                    "data": {},
+                    "error": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Account or resource not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "oneOf": [
+                    {
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "error"
+                      ]
+                    }
+                  ],
+                  "properties": {
+                    "data": {},
+                    "error": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Conflict, uncertain delivery, authentication, or audience verification required"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "oneOf": [
+                    {
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "error"
+                      ]
+                    }
+                  ],
+                  "properties": {
+                    "data": {},
+                    "error": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Upstream rate limit"
+          },
+          "501": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "oneOf": [
+                    {
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "error"
+                      ]
+                    }
+                  ],
+                  "properties": {
+                    "data": {},
+                    "error": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Standalone capability unavailable"
+          },
+          "502": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "oneOf": [
+                    {
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "error"
+                      ]
+                    }
+                  ],
+                  "properties": {
+                    "data": {},
+                    "error": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Upstream protocol or transport failure"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "oneOf": [
+                    {
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "error"
+                      ]
+                    }
+                  ],
+                  "properties": {
+                    "data": {},
+                    "error": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Local vault or runtime unavailable"
+          }
+        },
+        "x-standalone-available": true
+      }
+    },
     "/v1/accounts/{account_id}/events/list": {
       "get": {
         "description": "Poll durable local events after a cursor. Remote Snapchat events require the standalone protocol.",
@@ -5280,6 +6259,8 @@
             "name": "cursor",
             "required": false,
             "schema": {
+              "description": "Opaque continuation value from the same list operation. Friend search uses the last returned friend UUID.",
+              "maxLength": 4096,
               "type": "string"
             }
           },
@@ -5288,6 +6269,10 @@
             "name": "limit",
             "required": false,
             "schema": {
+              "default": 100,
+              "description": "Maximum page size; omitted values use the operation default.",
+              "maximum": 500,
+              "minimum": 1,
               "type": "integer"
             }
           }
@@ -5776,6 +6761,497 @@
         }
       }
     },
+    "/v1/accounts/{account_id}/exclusions/add": {
+      "post": {
+        "description": "Atomically add one recipient UUID to this account's local exclusions without replacing other entries. Idempotent; no friendship or network change.",
+        "operationId": "exclusions.add",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "account_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "recipient_id": {
+                    "description": "Snapchat recipient UUID. Resolve usernames using recipients.resolve first.",
+                    "maxLength": 128,
+                    "minLength": 1,
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "recipient_id"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "oneOf": [
+                    {
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "error"
+                      ]
+                    }
+                  ],
+                  "properties": {
+                    "data": {},
+                    "error": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Structured operation result"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "oneOf": [
+                    {
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "error"
+                      ]
+                    }
+                  ],
+                  "properties": {
+                    "data": {},
+                    "error": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Invalid arguments"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "oneOf": [
+                    {
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "error"
+                      ]
+                    }
+                  ],
+                  "properties": {
+                    "data": {},
+                    "error": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "oneOf": [
+                    {
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "error"
+                      ]
+                    }
+                  ],
+                  "properties": {
+                    "data": {},
+                    "error": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Recipient excluded or origin forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "oneOf": [
+                    {
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "error"
+                      ]
+                    }
+                  ],
+                  "properties": {
+                    "data": {},
+                    "error": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Account or resource not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "oneOf": [
+                    {
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "error"
+                      ]
+                    }
+                  ],
+                  "properties": {
+                    "data": {},
+                    "error": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Conflict, uncertain delivery, authentication, or audience verification required"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "oneOf": [
+                    {
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "error"
+                      ]
+                    }
+                  ],
+                  "properties": {
+                    "data": {},
+                    "error": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Upstream rate limit"
+          },
+          "501": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "oneOf": [
+                    {
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "error"
+                      ]
+                    }
+                  ],
+                  "properties": {
+                    "data": {},
+                    "error": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Standalone capability unavailable"
+          },
+          "502": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "oneOf": [
+                    {
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "error"
+                      ]
+                    }
+                  ],
+                  "properties": {
+                    "data": {},
+                    "error": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Upstream protocol or transport failure"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "oneOf": [
+                    {
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "error"
+                      ]
+                    }
+                  ],
+                  "properties": {
+                    "data": {},
+                    "error": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Local vault or runtime unavailable"
+          }
+        },
+        "x-standalone-available": true
+      }
+    },
     "/v1/accounts/{account_id}/exclusions/list": {
       "get": {
         "description": "List the account's persistent recipient exclusions.",
@@ -5790,6 +7266,497 @@
             }
           }
         ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "oneOf": [
+                    {
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "error"
+                      ]
+                    }
+                  ],
+                  "properties": {
+                    "data": {},
+                    "error": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Structured operation result"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "oneOf": [
+                    {
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "error"
+                      ]
+                    }
+                  ],
+                  "properties": {
+                    "data": {},
+                    "error": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Invalid arguments"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "oneOf": [
+                    {
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "error"
+                      ]
+                    }
+                  ],
+                  "properties": {
+                    "data": {},
+                    "error": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "oneOf": [
+                    {
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "error"
+                      ]
+                    }
+                  ],
+                  "properties": {
+                    "data": {},
+                    "error": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Recipient excluded or origin forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "oneOf": [
+                    {
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "error"
+                      ]
+                    }
+                  ],
+                  "properties": {
+                    "data": {},
+                    "error": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Account or resource not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "oneOf": [
+                    {
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "error"
+                      ]
+                    }
+                  ],
+                  "properties": {
+                    "data": {},
+                    "error": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Conflict, uncertain delivery, authentication, or audience verification required"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "oneOf": [
+                    {
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "error"
+                      ]
+                    }
+                  ],
+                  "properties": {
+                    "data": {},
+                    "error": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Upstream rate limit"
+          },
+          "501": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "oneOf": [
+                    {
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "error"
+                      ]
+                    }
+                  ],
+                  "properties": {
+                    "data": {},
+                    "error": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Standalone capability unavailable"
+          },
+          "502": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "oneOf": [
+                    {
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "error"
+                      ]
+                    }
+                  ],
+                  "properties": {
+                    "data": {},
+                    "error": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Upstream protocol or transport failure"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "oneOf": [
+                    {
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "error"
+                      ]
+                    }
+                  ],
+                  "properties": {
+                    "data": {},
+                    "error": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Local vault or runtime unavailable"
+          }
+        },
+        "x-standalone-available": true
+      }
+    },
+    "/v1/accounts/{account_id}/exclusions/remove": {
+      "post": {
+        "description": "Atomically remove one recipient UUID from this account's local exclusions without replacing other entries. Idempotent; no friendship or network change.",
+        "operationId": "exclusions.remove",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "account_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "recipient_id": {
+                    "description": "Snapchat recipient UUID. Resolve usernames using recipients.resolve first.",
+                    "maxLength": 128,
+                    "minLength": 1,
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "recipient_id"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
         "responses": {
           "200": {
             "content": {
@@ -6266,6 +8233,7 @@
                 "additionalProperties": false,
                 "properties": {
                   "recipients": {
+                    "description": "Explicit recipient identifiers; duplicates are ignored where applicable. This does not resolve usernames.",
                     "items": {
                       "type": "string"
                     },
@@ -6758,6 +8726,9 @@
                 "additionalProperties": false,
                 "properties": {
                   "recipient_id": {
+                    "description": "Snapchat recipient UUID. Resolve usernames using recipients.resolve first.",
+                    "maxLength": 128,
+                    "minLength": 1,
                     "type": "string"
                   }
                 },
@@ -7246,6 +9217,9 @@
                 "additionalProperties": false,
                 "properties": {
                   "recipient_id": {
+                    "description": "Snapchat recipient UUID. Resolve usernames using recipients.resolve first.",
+                    "maxLength": 128,
+                    "minLength": 1,
                     "type": "string"
                   }
                 },
@@ -7731,6 +9705,8 @@
             "name": "cursor",
             "required": false,
             "schema": {
+              "description": "Opaque continuation value from the same list operation. Friend search uses the last returned friend UUID.",
+              "maxLength": 4096,
               "type": "string"
             }
           },
@@ -7739,6 +9715,10 @@
             "name": "limit",
             "required": false,
             "schema": {
+              "default": 100,
+              "description": "Maximum page size; omitted values use the operation default.",
+              "maximum": 500,
+              "minimum": 1,
               "type": "integer"
             }
           }
@@ -8219,6 +10199,9 @@
                 "additionalProperties": false,
                 "properties": {
                   "recipient_id": {
+                    "description": "Snapchat recipient UUID. Resolve usernames using recipients.resolve first.",
+                    "maxLength": 128,
+                    "minLength": 1,
                     "type": "string"
                   }
                 },
@@ -8686,6 +10669,512 @@
         "x-standalone-available": false
       }
     },
+    "/v1/accounts/{account_id}/friends/search": {
+      "get": {
+        "description": "Search the synchronized confirmed-friend snapshot by username, display name, or UUID. Applies exclusions, reports snapshot age, and never performs a network sync. Call friends.list to refresh.",
+        "operationId": "friends.search",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "account_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "cursor",
+            "required": false,
+            "schema": {
+              "description": "Opaque continuation value from the same list operation. Friend search uses the last returned friend UUID.",
+              "maxLength": 4096,
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 100,
+              "description": "Maximum page size; omitted values use the operation default.",
+              "maximum": 500,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "query",
+            "required": true,
+            "schema": {
+              "description": "Username (optional @), display name, or recipient UUID. Local friend snapshot only.",
+              "examples": [
+                "@sample_user",
+                "Sample Name"
+              ],
+              "maxLength": 128,
+              "minLength": 1,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "oneOf": [
+                    {
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "error"
+                      ]
+                    }
+                  ],
+                  "properties": {
+                    "data": {},
+                    "error": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Structured operation result"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "oneOf": [
+                    {
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "error"
+                      ]
+                    }
+                  ],
+                  "properties": {
+                    "data": {},
+                    "error": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Invalid arguments"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "oneOf": [
+                    {
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "error"
+                      ]
+                    }
+                  ],
+                  "properties": {
+                    "data": {},
+                    "error": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "oneOf": [
+                    {
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "error"
+                      ]
+                    }
+                  ],
+                  "properties": {
+                    "data": {},
+                    "error": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Recipient excluded or origin forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "oneOf": [
+                    {
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "error"
+                      ]
+                    }
+                  ],
+                  "properties": {
+                    "data": {},
+                    "error": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Account or resource not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "oneOf": [
+                    {
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "error"
+                      ]
+                    }
+                  ],
+                  "properties": {
+                    "data": {},
+                    "error": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Conflict, uncertain delivery, authentication, or audience verification required"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "oneOf": [
+                    {
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "error"
+                      ]
+                    }
+                  ],
+                  "properties": {
+                    "data": {},
+                    "error": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Upstream rate limit"
+          },
+          "501": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "oneOf": [
+                    {
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "error"
+                      ]
+                    }
+                  ],
+                  "properties": {
+                    "data": {},
+                    "error": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Standalone capability unavailable"
+          },
+          "502": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "oneOf": [
+                    {
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "error"
+                      ]
+                    }
+                  ],
+                  "properties": {
+                    "data": {},
+                    "error": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Upstream protocol or transport failure"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "oneOf": [
+                    {
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "error"
+                      ]
+                    }
+                  ],
+                  "properties": {
+                    "data": {},
+                    "error": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Local vault or runtime unavailable"
+          }
+        },
+        "x-standalone-available": true
+      }
+    },
     "/v1/accounts/{account_id}/friends/unblock": {
       "post": {
         "description": "Unavailable standalone operation: friends.unblock. Conversation pagination, direct/group texts, encrypted media upload, and guarded My Story publication are implemented. Direct EEL and group TLS-only JPEG snap delivery are live-validated. Incoming friend requests, public profile lookup, and own story status reads are implemented. Owned story metadata is implemented but awaits live validation. Message pagination, remote story feed listing/deletion, and other unvalidated operations remain unavailable.",
@@ -8707,6 +11196,9 @@
                 "additionalProperties": false,
                 "properties": {
                   "recipient_id": {
+                    "description": "Snapchat recipient UUID. Resolve usernames using recipients.resolve first.",
+                    "maxLength": 128,
+                    "minLength": 1,
                     "type": "string"
                   }
                 },
@@ -9195,12 +11687,22 @@
                 "additionalProperties": false,
                 "properties": {
                   "conversation_id": {
+                    "description": "Snapchat conversation UUID returned by conversations.list; groups.get requires a user-created group.",
+                    "maxLength": 128,
+                    "minLength": 1,
                     "type": "string"
                   },
                   "idempotency_key": {
+                    "description": "Stable caller-chosen key for one logical send. Reuse for retries/status; changing it can send another copy.",
+                    "examples": [
+                      "photo-request-001"
+                    ],
+                    "maxLength": 128,
+                    "minLength": 1,
                     "type": "string"
                   },
                   "recipients": {
+                    "description": "Explicit recipient identifiers; duplicates are ignored where applicable. This does not resolve usernames.",
                     "items": {
                       "type": "string"
                     },
@@ -9695,9 +12197,16 @@
                 "additionalProperties": false,
                 "properties": {
                   "idempotency_key": {
+                    "description": "Stable caller-chosen key for one logical send. Reuse for retries/status; changing it can send another copy.",
+                    "examples": [
+                      "photo-request-001"
+                    ],
+                    "maxLength": 128,
+                    "minLength": 1,
                     "type": "string"
                   },
                   "recipients": {
+                    "description": "Explicit recipient identifiers; duplicates are ignored where applicable. This does not resolve usernames.",
                     "items": {
                       "type": "string"
                     },
@@ -10175,7 +12684,7 @@
     },
     "/v1/accounts/{account_id}/groups/get": {
       "get": {
-        "description": "Unavailable standalone operation: groups.get. Conversation pagination, direct/group texts, encrypted media upload, and guarded My Story publication are implemented. Direct EEL and group TLS-only JPEG snap delivery are live-validated. Incoming friend requests, public profile lookup, and own story status reads are implemented. Owned story metadata is implemented but awaits live validation. Message pagination, remote story feed listing/deletion, and other unvalidated operations remain unavailable.",
+        "description": "Get one cached user-created group and its participants. Blocks excluded members and reports snapshot age. Does not synchronize membership or open messages.",
         "operationId": "groups.get",
         "parameters": [
           {
@@ -10191,23 +12700,10 @@
             "name": "conversation_id",
             "required": true,
             "schema": {
+              "description": "Snapchat conversation UUID returned by conversations.list; groups.get requires a user-created group.",
+              "maxLength": 128,
+              "minLength": 1,
               "type": "string"
-            }
-          },
-          {
-            "in": "query",
-            "name": "cursor",
-            "required": false,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "in": "query",
-            "name": "limit",
-            "required": false,
-            "schema": {
-              "type": "integer"
             }
           }
         ],
@@ -10663,7 +13159,7 @@
             "description": "Local vault or runtime unavailable"
           }
         },
-        "x-standalone-available": false
+        "x-standalone-available": true
       }
     },
     "/v1/accounts/{account_id}/groups/remove_members": {
@@ -10687,12 +13183,22 @@
                 "additionalProperties": false,
                 "properties": {
                   "conversation_id": {
+                    "description": "Snapchat conversation UUID returned by conversations.list; groups.get requires a user-created group.",
+                    "maxLength": 128,
+                    "minLength": 1,
                     "type": "string"
                   },
                   "idempotency_key": {
+                    "description": "Stable caller-chosen key for one logical send. Reuse for retries/status; changing it can send another copy.",
+                    "examples": [
+                      "photo-request-001"
+                    ],
+                    "maxLength": 128,
+                    "minLength": 1,
                     "type": "string"
                   },
                   "recipients": {
+                    "description": "Explicit recipient identifiers; duplicates are ignored where applicable. This does not resolve usernames.",
                     "items": {
                       "type": "string"
                     },
@@ -11187,6 +13693,9 @@
                 "additionalProperties": false,
                 "properties": {
                   "job_id": {
+                    "description": "Account-owned local job ID returned by jobs.list.",
+                    "maxLength": 128,
+                    "minLength": 1,
                     "type": "string"
                   }
                 },
@@ -11675,12 +14184,22 @@
                 "additionalProperties": false,
                 "properties": {
                   "idempotency_key": {
+                    "description": "Stable caller-chosen key for one logical send. Reuse for retries/status; changing it can send another copy.",
+                    "examples": [
+                      "photo-request-001"
+                    ],
+                    "maxLength": 128,
+                    "minLength": 1,
                     "type": "string"
                   },
                   "media_id": {
+                    "description": "Account-bound handle returned by media.upload or media.upload_file; never an external URL.",
+                    "maxLength": 128,
+                    "minLength": 1,
                     "type": "string"
                   },
                   "recipients": {
+                    "description": "Explicit recipient identifiers; duplicates are ignored where applicable. This does not resolve usernames.",
                     "items": {
                       "type": "string"
                     },
@@ -11688,6 +14207,9 @@
                     "type": "array"
                   },
                   "text": {
+                    "description": "Message text, preserved verbatim; sending supports at most 16000 UTF-8 bytes.",
+                    "maxLength": 16000,
+                    "minLength": 1,
                     "type": "string"
                   }
                 },
@@ -12174,6 +14696,9 @@
             "name": "job_id",
             "required": true,
             "schema": {
+              "description": "Account-owned local job ID returned by jobs.list.",
+              "maxLength": 128,
+              "minLength": 1,
               "type": "string"
             }
           }
@@ -12651,6 +15176,8 @@
             "name": "cursor",
             "required": false,
             "schema": {
+              "description": "Opaque continuation value from the same list operation. Friend search uses the last returned friend UUID.",
+              "maxLength": 4096,
               "type": "string"
             }
           },
@@ -12659,6 +15186,10 @@
             "name": "limit",
             "required": false,
             "schema": {
+              "default": 100,
+              "description": "Maximum page size; omitted values use the operation default.",
+              "maximum": 500,
+              "minimum": 1,
               "type": "integer"
             }
           }
@@ -13139,6 +15670,7 @@
                 "additionalProperties": false,
                 "properties": {
                   "recipients": {
+                    "description": "Explicit recipient identifiers; duplicates are ignored where applicable. This does not resolve usernames.",
                     "items": {
                       "type": "string"
                     },
@@ -13631,14 +16163,522 @@
                 "additionalProperties": false,
                 "properties": {
                   "content_base64": {
+                    "description": "Base64-encoded PNG/JPEG/MP4 bytes, at most 16 MiB decoded. Prefer media.upload_file for local files.",
                     "type": "string"
                   },
                   "mime_type": {
+                    "description": "Actual media type; bytes are validated before encryption and upload.",
+                    "enum": [
+                      "image/png",
+                      "image/jpeg",
+                      "video/mp4"
+                    ],
                     "type": "string"
                   }
                 },
                 "required": [
                   "content_base64",
+                  "mime_type"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "oneOf": [
+                    {
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "error"
+                      ]
+                    }
+                  ],
+                  "properties": {
+                    "data": {},
+                    "error": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Structured operation result"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "oneOf": [
+                    {
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "error"
+                      ]
+                    }
+                  ],
+                  "properties": {
+                    "data": {},
+                    "error": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Invalid arguments"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "oneOf": [
+                    {
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "error"
+                      ]
+                    }
+                  ],
+                  "properties": {
+                    "data": {},
+                    "error": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "oneOf": [
+                    {
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "error"
+                      ]
+                    }
+                  ],
+                  "properties": {
+                    "data": {},
+                    "error": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Recipient excluded or origin forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "oneOf": [
+                    {
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "error"
+                      ]
+                    }
+                  ],
+                  "properties": {
+                    "data": {},
+                    "error": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Account or resource not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "oneOf": [
+                    {
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "error"
+                      ]
+                    }
+                  ],
+                  "properties": {
+                    "data": {},
+                    "error": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Conflict, uncertain delivery, authentication, or audience verification required"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "oneOf": [
+                    {
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "error"
+                      ]
+                    }
+                  ],
+                  "properties": {
+                    "data": {},
+                    "error": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Upstream rate limit"
+          },
+          "501": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "oneOf": [
+                    {
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "error"
+                      ]
+                    }
+                  ],
+                  "properties": {
+                    "data": {},
+                    "error": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Standalone capability unavailable"
+          },
+          "502": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "oneOf": [
+                    {
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "error"
+                      ]
+                    }
+                  ],
+                  "properties": {
+                    "data": {},
+                    "error": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Upstream protocol or transport failure"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "oneOf": [
+                    {
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "error"
+                      ]
+                    }
+                  ],
+                  "properties": {
+                    "data": {},
+                    "error": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Local vault or runtime unavailable"
+          }
+        },
+        "x-standalone-available": true
+      }
+    },
+    "/v1/accounts/{account_id}/media/upload_file": {
+      "post": {
+        "description": "Encrypt and upload a local PNG/JPEG/MP4 file from an operator-configured media root on the HTTP server host. Requires serve --media-root. Returns a media handle, not file contents or encryption keys. Does not send or publish.",
+        "operationId": "media.upload_file",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "account_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "mime_type": {
+                    "description": "Actual media type; bytes are validated before encryption and upload.",
+                    "enum": [
+                      "image/png",
+                      "image/jpeg",
+                      "video/mp4"
+                    ],
+                    "type": "string"
+                  },
+                  "path": {
+                    "description": "Absolute path to a regular file inside a configured --media-root on the HTTP server host.",
+                    "maxLength": 4096,
+                    "minLength": 1,
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "path",
                   "mime_type"
                 ],
                 "type": "object"
@@ -14123,12 +17163,22 @@
                 "additionalProperties": false,
                 "properties": {
                   "conversation_id": {
+                    "description": "Snapchat conversation UUID returned by conversations.list; groups.get requires a user-created group.",
+                    "maxLength": 128,
+                    "minLength": 1,
                     "type": "string"
                   },
                   "idempotency_key": {
+                    "description": "Stable caller-chosen key for one logical send. Reuse for retries/status; changing it can send another copy.",
+                    "examples": [
+                      "photo-request-001"
+                    ],
+                    "maxLength": 128,
+                    "minLength": 1,
                     "type": "string"
                   },
                   "message_id": {
+                    "description": "Stable server message ID returned by message history or a delivery receipt.",
                     "type": "string"
                   },
                   "reaction": {
@@ -14619,6 +17669,9 @@
             "name": "conversation_id",
             "required": true,
             "schema": {
+              "description": "Snapchat conversation UUID returned by conversations.list; groups.get requires a user-created group.",
+              "maxLength": 128,
+              "minLength": 1,
               "type": "string"
             }
           },
@@ -14627,6 +17680,8 @@
             "name": "cursor",
             "required": false,
             "schema": {
+              "description": "Unavailable: message history pagination is not yet implemented; omit cursor.",
+              "maxLength": 4096,
               "type": "string"
             }
           },
@@ -14635,6 +17690,10 @@
             "name": "limit",
             "required": false,
             "schema": {
+              "default": 40,
+              "description": "Maximum page size; omitted values use the operation default.",
+              "maximum": 100,
+              "minimum": 1,
               "type": "integer"
             }
           }
@@ -15115,9 +18174,15 @@
                 "additionalProperties": false,
                 "properties": {
                   "conversation_id": {
+                    "description": "Snapchat conversation UUID returned by conversations.list; groups.get requires a user-created group.",
+                    "maxLength": 128,
+                    "minLength": 1,
                     "type": "string"
                   },
                   "text": {
+                    "description": "Message text, preserved verbatim; sending supports at most 16000 UTF-8 bytes.",
+                    "maxLength": 16000,
+                    "minLength": 1,
                     "type": "string"
                   }
                 },
@@ -15607,12 +18672,22 @@
                 "additionalProperties": false,
                 "properties": {
                   "conversation_id": {
+                    "description": "Snapchat conversation UUID returned by conversations.list; groups.get requires a user-created group.",
+                    "maxLength": 128,
+                    "minLength": 1,
                     "type": "string"
                   },
                   "idempotency_key": {
+                    "description": "Stable caller-chosen key for one logical send. Reuse for retries/status; changing it can send another copy.",
+                    "examples": [
+                      "photo-request-001"
+                    ],
+                    "maxLength": 128,
+                    "minLength": 1,
                     "type": "string"
                   },
                   "message_id": {
+                    "description": "Stable server message ID returned by message history or a delivery receipt.",
                     "type": "string"
                   },
                   "reaction": {
@@ -16106,12 +19181,22 @@
                 "additionalProperties": false,
                 "properties": {
                   "conversation_id": {
+                    "description": "Snapchat conversation UUID returned by conversations.list; groups.get requires a user-created group.",
+                    "maxLength": 128,
+                    "minLength": 1,
                     "type": "string"
                   },
                   "idempotency_key": {
+                    "description": "Stable caller-chosen key for one logical send. Reuse for retries/status; changing it can send another copy.",
+                    "examples": [
+                      "photo-request-001"
+                    ],
+                    "maxLength": 128,
+                    "minLength": 1,
                     "type": "string"
                   },
                   "message_id": {
+                    "description": "Stable server message ID returned by message history or a delivery receipt.",
                     "type": "string"
                   },
                   "reaction": {
@@ -16605,15 +19690,28 @@
                 "additionalProperties": false,
                 "properties": {
                   "conversation_id": {
+                    "description": "Snapchat conversation UUID returned by conversations.list; groups.get requires a user-created group.",
+                    "maxLength": 128,
+                    "minLength": 1,
                     "type": "string"
                   },
                   "idempotency_key": {
+                    "description": "Stable caller-chosen key for one logical send. Reuse for retries/status; changing it can send another copy.",
+                    "examples": [
+                      "photo-request-001"
+                    ],
+                    "maxLength": 128,
+                    "minLength": 1,
                     "type": "string"
                   },
                   "reply_to": {
+                    "description": "Unavailable: quoted replies have not been validated; omit this field.",
                     "type": "string"
                   },
                   "text": {
+                    "description": "Message text, preserved verbatim; sending supports at most 16000 UTF-8 bytes.",
+                    "maxLength": 16000,
+                    "minLength": 1,
                     "type": "string"
                   }
                 },
@@ -17101,6 +20199,493 @@
             "name": "recipient_id",
             "required": true,
             "schema": {
+              "description": "Snapchat recipient UUID. Resolve usernames using recipients.resolve first.",
+              "maxLength": 128,
+              "minLength": 1,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "oneOf": [
+                    {
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "error"
+                      ]
+                    }
+                  ],
+                  "properties": {
+                    "data": {},
+                    "error": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Structured operation result"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "oneOf": [
+                    {
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "error"
+                      ]
+                    }
+                  ],
+                  "properties": {
+                    "data": {},
+                    "error": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Invalid arguments"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "oneOf": [
+                    {
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "error"
+                      ]
+                    }
+                  ],
+                  "properties": {
+                    "data": {},
+                    "error": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "oneOf": [
+                    {
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "error"
+                      ]
+                    }
+                  ],
+                  "properties": {
+                    "data": {},
+                    "error": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Recipient excluded or origin forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "oneOf": [
+                    {
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "error"
+                      ]
+                    }
+                  ],
+                  "properties": {
+                    "data": {},
+                    "error": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Account or resource not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "oneOf": [
+                    {
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "error"
+                      ]
+                    }
+                  ],
+                  "properties": {
+                    "data": {},
+                    "error": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Conflict, uncertain delivery, authentication, or audience verification required"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "oneOf": [
+                    {
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "error"
+                      ]
+                    }
+                  ],
+                  "properties": {
+                    "data": {},
+                    "error": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Upstream rate limit"
+          },
+          "501": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "oneOf": [
+                    {
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "error"
+                      ]
+                    }
+                  ],
+                  "properties": {
+                    "data": {},
+                    "error": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Standalone capability unavailable"
+          },
+          "502": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "oneOf": [
+                    {
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "error"
+                      ]
+                    }
+                  ],
+                  "properties": {
+                    "data": {},
+                    "error": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Upstream protocol or transport failure"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "oneOf": [
+                    {
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "error"
+                      ]
+                    }
+                  ],
+                  "properties": {
+                    "data": {},
+                    "error": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Local vault or runtime unavailable"
+          }
+        },
+        "x-standalone-available": true
+      }
+    },
+    "/v1/accounts/{account_id}/recipients/resolve": {
+      "get": {
+        "description": "Resolve an exact username, UUID, or unique exact display name from the friend snapshot. Partial or ambiguous matches return candidates without choosing a recipient. Exclusions and self filtering apply; stale data does not prove send eligibility.",
+        "operationId": "recipients.resolve",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "account_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "query",
+            "required": true,
+            "schema": {
+              "description": "Username (optional @), display name, or recipient UUID. Local friend snapshot only.",
+              "examples": [
+                "@sample_user",
+                "Sample Name"
+              ],
+              "maxLength": 128,
+              "minLength": 1,
               "type": "string"
             }
           }
@@ -17581,6 +21166,9 @@
                 "additionalProperties": false,
                 "properties": {
                   "recipient_id": {
+                    "description": "Snapchat recipient UUID. Resolve usernames using recipients.resolve first.",
+                    "maxLength": 128,
+                    "minLength": 1,
                     "type": "string"
                   }
                 },
@@ -18066,6 +21654,8 @@
             "name": "cursor",
             "required": false,
             "schema": {
+              "description": "Opaque continuation value from the same list operation. Friend search uses the last returned friend UUID.",
+              "maxLength": 4096,
               "type": "string"
             }
           },
@@ -18074,6 +21664,10 @@
             "name": "limit",
             "required": false,
             "schema": {
+              "default": 100,
+              "description": "Maximum page size; omitted values use the operation default.",
+              "maximum": 500,
+              "minimum": 1,
               "type": "integer"
             }
           }
@@ -18554,6 +22148,9 @@
                 "additionalProperties": false,
                 "properties": {
                   "recipient_id": {
+                    "description": "Snapchat recipient UUID. Resolve usernames using recipients.resolve first.",
+                    "maxLength": 128,
+                    "minLength": 1,
                     "type": "string"
                   }
                 },
@@ -19039,6 +22636,13 @@
             "name": "query",
             "required": true,
             "schema": {
+              "description": "Username (optional @), display name, or recipient UUID. Local friend snapshot only.",
+              "examples": [
+                "@sample_user",
+                "Sample Name"
+              ],
+              "maxLength": 128,
+              "minLength": 1,
               "type": "string"
             }
           }
@@ -19519,6 +23123,7 @@
                 "additionalProperties": false,
                 "properties": {
                   "content_id": {
+                    "description": "Content identifier returned by the corresponding Snapchat operation.",
                     "type": "string"
                   }
                 },
@@ -20007,9 +23612,15 @@
                 "additionalProperties": false,
                 "properties": {
                   "conversation_id": {
+                    "description": "Snapchat conversation UUID returned by conversations.list; groups.get requires a user-created group.",
+                    "maxLength": 128,
+                    "minLength": 1,
                     "type": "string"
                   },
                   "media_id": {
+                    "description": "Account-bound handle returned by media.upload or media.upload_file; never an external URL.",
+                    "maxLength": 128,
+                    "minLength": 1,
                     "type": "string"
                   }
                 },
@@ -20499,12 +24110,24 @@
                 "additionalProperties": false,
                 "properties": {
                   "conversation_id": {
+                    "description": "Snapchat conversation UUID returned by conversations.list; groups.get requires a user-created group.",
+                    "maxLength": 128,
+                    "minLength": 1,
                     "type": "string"
                   },
                   "idempotency_key": {
+                    "description": "Stable caller-chosen key for one logical send. Reuse for retries/status; changing it can send another copy.",
+                    "examples": [
+                      "photo-request-001"
+                    ],
+                    "maxLength": 128,
+                    "minLength": 1,
                     "type": "string"
                   },
                   "media_id": {
+                    "description": "Account-bound handle returned by media.upload or media.upload_file; never an external URL.",
+                    "maxLength": 128,
+                    "minLength": 1,
                     "type": "string"
                   }
                 },
@@ -20995,6 +24618,7 @@
                 "additionalProperties": false,
                 "properties": {
                   "content_id": {
+                    "description": "Content identifier returned by the corresponding Snapchat operation.",
                     "type": "string"
                   }
                 },
@@ -21481,6 +25105,7 @@
             "name": "content_id",
             "required": true,
             "schema": {
+              "description": "Content identifier returned by the corresponding Snapchat operation.",
               "type": "string"
             }
           }
@@ -21959,6 +25584,8 @@
             "name": "cursor",
             "required": false,
             "schema": {
+              "description": "Opaque continuation value from the same list operation. Friend search uses the last returned friend UUID.",
+              "maxLength": 4096,
               "type": "string"
             }
           },
@@ -21967,6 +25594,10 @@
             "name": "limit",
             "required": false,
             "schema": {
+              "default": 100,
+              "description": "Maximum page size; omitted values use the operation default.",
+              "maximum": 500,
+              "minimum": 1,
               "type": "integer"
             }
           }
@@ -22447,6 +26078,7 @@
                 "additionalProperties": false,
                 "properties": {
                   "audience": {
+                    "description": "Choose friends-only My Story or the account's saved custom audience; public story publishing is not supported.",
                     "enum": [
                       "friends",
                       "custom"
@@ -22459,6 +26091,9 @@
                     "type": "boolean"
                   },
                   "media_id": {
+                    "description": "Account-bound handle returned by media.upload or media.upload_file; never an external URL.",
+                    "maxLength": 128,
+                    "minLength": 1,
                     "type": "string"
                   }
                 },
@@ -22948,6 +26583,7 @@
                 "additionalProperties": false,
                 "properties": {
                   "audience": {
+                    "description": "Choose friends-only My Story or the account's saved custom audience; public story publishing is not supported.",
                     "enum": [
                       "friends",
                       "custom"
@@ -22955,6 +26591,12 @@
                     "type": "string"
                   },
                   "idempotency_key": {
+                    "description": "Stable caller-chosen key for one logical send. Reuse for retries/status; changing it can send another copy.",
+                    "examples": [
+                      "photo-request-001"
+                    ],
+                    "maxLength": 128,
+                    "minLength": 1,
                     "type": "string"
                   },
                   "ignore_exclusions": {
@@ -22963,6 +26605,9 @@
                     "type": "boolean"
                   },
                   "media_id": {
+                    "description": "Account-bound handle returned by media.upload or media.upload_file; never an external URL.",
+                    "maxLength": 128,
+                    "minLength": 1,
                     "type": "string"
                   }
                 },
@@ -23450,6 +27095,8 @@
             "name": "cursor",
             "required": false,
             "schema": {
+              "description": "Opaque continuation value from the same list operation. Friend search uses the last returned friend UUID.",
+              "maxLength": 4096,
               "type": "string"
             }
           },
@@ -23458,6 +27105,10 @@
             "name": "limit",
             "required": false,
             "schema": {
+              "default": 100,
+              "description": "Maximum page size; omitted values use the operation default.",
+              "maximum": 500,
+              "minimum": 1,
               "type": "integer"
             }
           }
@@ -24407,6 +28058,7 @@
                 "additionalProperties": false,
                 "properties": {
                   "content_id": {
+                    "description": "Content identifier returned by the corresponding Snapchat operation.",
                     "type": "string"
                   }
                 },

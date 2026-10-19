@@ -90,6 +90,9 @@ func runService(ctx context.Context, command string, args []string, out io.Write
 	accountID := f.String("account", "", "target account ID (import-exclusions)")
 	testText := f.String("text", "hey, testing my Snapchat connection 👋", "single validation message (protocol-test-send)")
 	testKey := f.String("idempotency-key", "standalone-validation-2026-10-19", "stable validation key (protocol-test-send)")
+	includeUnavailable := f.Bool("include-unavailable", false, "advertise unimplemented MCP tools as well as available tools (mcp)")
+	mediaRoots := []string{}
+	f.Func("media-root", "absolute allowed local media directory; repeat for multiple roots (serve)", func(value string) error { mediaRoots = append(mediaRoots, value); return nil })
 	probeKind := f.String("probe", "keys", "protocol probe: keys, session, feed, native-feed, or messages")
 	prepareMediaID := f.String("media-id", "", "uploaded media handle (protocol-prepare-send)")
 	prepareAudience := f.String("audience", "friends", "story audience: friends or saved custom audience")
@@ -277,7 +280,7 @@ func runService(ctx context.Context, command string, args []string, out io.Write
 		if err != nil {
 			return err
 		}
-		server, err := service.MCPServer(*endpoint, token)
+		server, err := service.MCPServer(*endpoint, token, service.MCPOptions{IncludeUnavailable: *includeUnavailable})
 		if err != nil {
 			return err
 		}
@@ -304,6 +307,9 @@ func runService(ctx context.Context, command string, args []string, out io.Write
 		if err = service.ProvisionMasterKey(); err != nil {
 			return err
 		}
+	}
+	if err = store.ConfigureMediaRoots(mediaRoots); err != nil {
+		return err
 	}
 	listener, err := net.Listen("tcp", *addr)
 	if err != nil {

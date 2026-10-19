@@ -14,17 +14,23 @@ import (
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 )
 
-func MCPServer(endpoint, token string) (*mcp.Server, error) {
+type MCPOptions struct{ IncludeUnavailable bool }
+
+func MCPServer(endpoint, token string, options ...MCPOptions) (*mcp.Server, error) {
 	u, err := url.Parse(endpoint)
 	if err != nil || u.Scheme != "http" || (u.Hostname() != "127.0.0.1" && u.Hostname() != "localhost" && u.Hostname() != "::1") || u.User != nil || u.RawQuery != "" || u.Fragment != "" || u.Path != "" {
 		return nil, fmt.Errorf("service URL must be a loopback HTTP origin")
 	}
 	client := &http.Client{Timeout: 90 * time.Second, CheckRedirect: func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }}
-	server := mcp.NewServer(&mcp.Implementation{Name: "snapchat-mcp", Version: "0.1.0"}, nil)
+	server := mcp.NewServer(&mcp.Implementation{Name: "snapchat-mcp", Version: Version}, nil)
+	includeUnavailable := len(options) > 0 && options[0].IncludeUnavailable
 	for _, op := range Operations() {
+		if !op.Available && !includeUnavailable {
+			continue
+		}
 		openWorld := true
 		switch op.Name {
-		case "accounts.list", "accounts.create", "accounts.get", "accounts.verify_keys", "accounts.verify_session", "stories.published", "capabilities.list", "exclusions.list", "exclusions.replace", "events.list", "jobs.preview", "jobs.list", "jobs.get", "jobs.cancel":
+		case "accounts.list", "accounts.create", "accounts.get", "accounts.verify_keys", "accounts.verify_session", "stories.published", "capabilities.list", "exclusions.list", "exclusions.replace", "exclusions.add", "exclusions.remove", "friends.search", "recipients.resolve", "conversations.get", "groups.get", "deliveries.get", "events.list", "jobs.preview", "jobs.list", "jobs.get", "jobs.cancel":
 			openWorld = false
 		}
 		description := op.Description

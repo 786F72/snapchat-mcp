@@ -20,6 +20,9 @@ import (
 type Store struct {
 	db           *sql.DB
 	accountLocks sync.Map
+	vault        Vault
+	mediaMu      sync.RWMutex
+	mediaRoots   []string
 	runtimeDir   string
 }
 type Account struct {
@@ -85,7 +88,7 @@ func Open(dir string) (*Store, error) {
 		db.Close()
 		return nil, err
 	}
-	return &Store{db: db, runtimeDir: filepath.Join(dir, "runtime")}, nil
+	return &Store{db: db, vault: OSVault(), runtimeDir: filepath.Join(dir, "runtime")}, nil
 }
 func (s *Store) Close() error { return s.db.Close() }
 func scanAccount(row interface{ Scan(...any) error }) (Account, error) {
@@ -170,6 +173,11 @@ func (s *Store) ReplaceExclusions(ctx context.Context, account string, ids []str
 			return fail("invalid_argument", "invalid recipient identifier", 400)
 		}
 	}
+	unlock, err := s.lockAccount(ctx, account)
+	if err != nil {
+		return err
+	}
+	defer unlock()
 	tx, err := s.db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
@@ -208,4 +216,16 @@ func (s *Store) Events(ctx context.Context, account string, cursor int64, limit 
 		p.NextCursor = fmt.Sprint(items[limit-1].Cursor)
 	}
 	return p, rows.Err()
+}
+
+// Share mutation ordering with the native sender's per-account lock.
+func (s *Store) lockAccount(ctx context.Context, account string) (func(), error) {
+	lock, _ := s.accountLocks.LoadOrStore(account, make(chan struct{}, 1))
+	ch := lock.(chan struct{})
+	select {
+	case ch <- struct{}{}:
+		return func() { <-ch }, nil
+	case <-ctx.Done():
+		return nil, ctx.Err()
+	}
 }

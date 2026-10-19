@@ -11,10 +11,10 @@ pinned Snapchat web runtime assets and implements a limited set of operations.
 | Area | Implemented scope |
 | --- | --- |
 | Accounts | Account isolation, encrypted credential capture, standalone refresh |
-| Contacts | Confirmed friends, incoming requests, public identity lookup, exclusions |
-| Conversations | Paginated metadata and text history without read receipts |
+| Contacts | Confirmed friends, local search/resolution, incoming requests, public identity, exclusions |
+| Conversations | Paginated metadata, cached conversation/group lookup, text history |
 | Texts | Direct EEL and group transport-encrypted sending with durable idempotency |
-| Media | Encrypted PNG/JPEG and H.264/AAC MP4 upload |
+| Media | Encrypted PNG/JPEG and H.264/AAC MP4 uploads from bytes or allowed local files |
 | Snaps | Direct EEL and group TLS-only JPEG delivery acknowledged in live tests |
 | Stories | Guarded friends/custom My Story publishing and local publication receipts |
 | MCP | Typed tools forwarding to the same authenticated local API |
@@ -94,6 +94,32 @@ Start the HTTP service first, then add this entry to your client's MCP config:
 MCP reads the local token file; do not put its value in client configuration.
 Account-scoped tools require `account_id`. Names include `snapchat_friends_list`,
 `snapchat_messages_send`, and `snapchat_snaps_send`.
+
+## Tools for common tasks
+
+- `snapchat_friends_search` / `snapchat_recipients_resolve`: find usernames or names
+  in the last synchronized friend snapshot, with local exclusions applied. Partial
+  or duplicate names return candidates; the model must select an exact identity.
+- `snapchat_conversations_get` / `snapchat_groups_get`: inspect cached metadata,
+  including participants and snapshot age.
+- `snapchat_exclusions_add` / `snapchat_exclusions_remove`: edit one UUID atomically.
+- `snapchat_deliveries_get`: inspect one attempt by its stable idempotency key.
+- `snapchat_media_upload_file`: upload a file without passing base64 to the model.
+
+Local file upload requires an explicit directory on the server host:
+
+```sh
+mkdir -p "$HOME/SnapchatMedia"
+./bin/snapchat-mcp serve --media-root "$HOME/SnapchatMedia"
+```
+
+Roots can be repeated. Only regular files within those roots are accepted; links
+escaping the roots are blocked. Upload does not send a snap. Use the returned
+`media_id` with `snapchat_snaps_send` or `snapchat_stories_publish`.
+
+MCP advertises working tools by default. Start it with `--include-unavailable`
+to inspect unfinished tools. `capabilities.list` and OpenAPI always include the
+full catalog. See [the changelog](CHANGELOG.md) for interface changes.
 
 ## Documentation
 

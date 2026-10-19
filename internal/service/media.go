@@ -188,11 +188,15 @@ func (s *Store) UploadMedia(ctx context.Context, account, encoded, mime string) 
 	if err != nil {
 		return nil, fail("invalid_argument", "content_base64 is invalid", 400)
 	}
+	return s.uploadMediaBytes(ctx, account, raw, mime)
+}
+
+func (s *Store) uploadMediaBytes(ctx context.Context, account string, raw []byte, mime string) (any, error) {
 	media, err := mediaMetadata(ctx, raw, mime)
 	if err != nil {
 		return nil, err
 	}
-	material, err := s.LoadSecret(ctx, OSVault(), account)
+	material, err := s.LoadSecret(ctx, s.vault, account)
 	if err != nil {
 		return nil, fail("reauth_required", "capture this account and unlock the OS keyring", 409)
 	}
@@ -248,7 +252,7 @@ func (s *Store) UploadMedia(ctx context.Context, account, encoded, mime string) 
 	media.ContentObject = object
 	media.ExpiresAt = time.Now().Add(24 * time.Hour).Unix()
 	plain, _ := json.Marshal(media)
-	sealed, err := OSVault().Seal(account+"/media/"+media.ID, plain)
+	sealed, err := s.vault.Seal(account+"/media/"+media.ID, plain)
 	if err != nil {
 		return nil, err
 	}
@@ -263,7 +267,7 @@ func (s *Store) loadMedia(ctx context.Context, account, id string) (Media, error
 	if s.db.QueryRowContext(ctx, "SELECT sealed FROM media WHERE account_id=? AND id=?", account, id).Scan(&sealed) != nil {
 		return media, fail("not_found", "media does not exist in this account", 404)
 	}
-	plain, err := OSVault().Open(account+"/media/"+id, sealed)
+	plain, err := s.vault.Open(account+"/media/"+id, sealed)
 	if err != nil || json.Unmarshal(plain, &media) != nil {
 		return media, fail("vault_unavailable", "media record could not be decrypted", 503)
 	}
