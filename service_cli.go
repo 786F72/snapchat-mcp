@@ -318,6 +318,10 @@ func runService(ctx context.Context, command string, args []string, out io.Write
 	if err != nil {
 		return err
 	}
+	schedulerCtx, stopScheduler := context.WithCancel(ctx)
+	schedulerDone := make(chan struct{})
+	go func() { defer close(schedulerDone); store.RunScheduler(schedulerCtx) }()
+	defer func() { stopScheduler(); <-schedulerDone }()
 	server := &http.Server{Handler: store.Handler(token), ReadHeaderTimeout: 5 * time.Second, ReadTimeout: 15 * time.Second, IdleTimeout: 60 * time.Second, MaxHeaderBytes: 16 << 10}
 	done := make(chan struct{})
 	defer close(done)

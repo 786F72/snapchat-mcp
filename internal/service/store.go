@@ -23,6 +23,7 @@ type Store struct {
 	inboxLocks    sync.Map
 	inboxSource   inboxSource
 	historySource func(context.Context, string, string, string, string, int) (historyWindow, error)
+	jobSend       func(context.Context, string, string, string, string) (any, error)
 	vault         Vault
 	mediaMu       sync.RWMutex
 	mediaRoots    []string
@@ -90,7 +91,10 @@ func Open(dir string) (*Store, error) {
  CREATE INDEX IF NOT EXISTS inbox_events_account_seq ON inbox_events(account_id,seq);
  CREATE TABLE IF NOT EXISTS inbox_heads(account_id TEXT NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,conversation_id TEXT NOT NULL,version INTEGER NOT NULL,anchor_id TEXT NOT NULL,event_at INTEGER NOT NULL,checked_at INTEGER NOT NULL,gap_possible INTEGER NOT NULL DEFAULT 0,PRIMARY KEY(account_id,conversation_id));
  CREATE TABLE IF NOT EXISTS inbox_scans(account_id TEXT PRIMARY KEY REFERENCES accounts(id) ON DELETE CASCADE,cursor TEXT NOT NULL);
- PRAGMA user_version=4;`)
+ CREATE TABLE IF NOT EXISTS account_identities(account_id TEXT PRIMARY KEY REFERENCES accounts(id) ON DELETE CASCADE,user_id TEXT NOT NULL);
+ CREATE TABLE IF NOT EXISTS scheduled_jobs(job_id TEXT PRIMARY KEY REFERENCES jobs(id) ON DELETE CASCADE,account_id TEXT NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,idempotency_key TEXT NOT NULL,payload_hash TEXT NOT NULL,run_at INTEGER NOT NULL,sealed BLOB NOT NULL,UNIQUE(account_id,idempotency_key));
+ CREATE INDEX IF NOT EXISTS scheduled_jobs_due ON scheduled_jobs(run_at);
+ PRAGMA user_version=5;`)
 	if err != nil {
 		db.Close()
 		return nil, err

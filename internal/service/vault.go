@@ -5,7 +5,9 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
+	"database/sql"
 	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -68,16 +70,61 @@ func (v Vault) Open(account string, sealed []byte) ([]byte, error) {
 	}
 	return a.Open(nil, sealed[:a.NonceSize()], sealed[a.NonceSize():], []byte("qq_snap/v1/"+account))
 }
+
+// CaptureSession explicitly reconnects an account after a browser sign-in.
+func (s *Store) CaptureSession(ctx context.Context, v Vault, account string, plain []byte) error {
+	return s.saveSession(ctx, v, account, plain, true)
+}
 func (s *Store) SaveSecret(ctx context.Context, v Vault, account string, plain []byte) error {
-	if _, err := s.Account(ctx, account); err != nil {
-		return err
-	}
+	return s.saveSession(ctx, v, account, plain, false)
+}
+func (s *Store) saveSession(ctx context.Context, v Vault, account string, plain []byte, reconnect bool) error {
 	sealed, err := v.Seal(account, plain)
 	if err != nil {
 		return err
 	}
-	_, err = s.db.ExecContext(ctx, "INSERT INTO secrets VALUES(?,?) ON CONFLICT(account_id) DO UPDATE SET sealed=excluded.sealed", account, sealed)
-	return err
+	var identity struct {
+		UserID string `json:"user_id"`
+	}
+	_ = json.Unmarshal(plain, &identity)
+	tx, err := s.db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+	var status string
+	if err = tx.QueryRowContext(ctx, "SELECT status FROM accounts WHERE id=?", account).Scan(&status); err == sql.ErrNoRows {
+		return fail("not_found", "account not found", 404)
+	} else if err != nil {
+		return err
+	}
+	if status == "disconnected" && !reconnect {
+		return fail("reauth_required", "account was disconnected; reconnect with a browser sign-in", 409)
+	}
+	if identity.UserID != "" {
+		var bound string
+		err = tx.QueryRowContext(ctx, "SELECT user_id FROM account_identities WHERE account_id=?", account).Scan(&bound)
+		if err == nil && bound != identity.UserID {
+			return fail("identity_mismatch", "this account is bound to another Snapchat identity", 409)
+		}
+		if err != nil && err != sql.ErrNoRows {
+			return err
+		}
+		if parseUUID(identity.UserID) != nil {
+			if _, err = tx.ExecContext(ctx, "INSERT OR IGNORE INTO account_identities VALUES(?,?)", account, identity.UserID); err != nil {
+				return err
+			}
+		}
+	}
+	if _, err = tx.ExecContext(ctx, "INSERT INTO secrets VALUES(?,?) ON CONFLICT(account_id) DO UPDATE SET sealed=excluded.sealed", account, sealed); err != nil {
+		return err
+	}
+	if reconnect && status == "disconnected" {
+		if _, err = tx.ExecContext(ctx, "UPDATE accounts SET status='protocol_blocked' WHERE id=?", account); err != nil {
+			return err
+		}
+	}
+	return tx.Commit()
 }
 
 func (s *Store) LoadSecret(ctx context.Context, v Vault, account string) ([]byte, error) {

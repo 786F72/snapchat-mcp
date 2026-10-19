@@ -8,8 +8,8 @@
     }
   },
   "info": {
-    "title": "Snapchat MCP local API",
-    "version": "0.6.0"
+    "title": "Snapchat HTTP API",
+    "version": "0.7.0"
   },
   "openapi": "3.1.0",
   "paths": {
@@ -1916,7 +1916,7 @@
     },
     "/v1/accounts/{account_id}/accounts/login": {
       "post": {
-        "description": "Unavailable standalone operation: accounts.login. Conversation and text-history pagination, paged message search, direct/group texts, encrypted media upload, and guarded My Story publication are implemented. Direct EEL and group TLS-only JPEG snap delivery are live-validated. Incoming friend requests, public profile lookup, own story status reads, and bounded inbox polling are implemented. Owned story metadata is implemented but awaits live validation. Remote story feed listing/deletion and other unvalidated operations remain unavailable.",
+        "description": "Unavailable standalone operation: accounts.login. Conversation and text-history pagination, paged message search, direct/group texts, encrypted media upload, and guarded My Story publication are implemented. Direct EEL and group TLS-only JPEG snap delivery are live-validated. Incoming friend requests, public profile lookup, own story status reads, and bounded inbox polling are implemented. Owned story metadata is implemented but awaits live validation. Scheduled text batches, service logout, incoming SSE pages, and group request preparation are implemented. Remote story feed listing/deletion and other unvalidated operations remain unavailable.",
         "operationId": "accounts.login",
         "parameters": [
           {
@@ -2398,7 +2398,7 @@
     },
     "/v1/accounts/{account_id}/accounts/logout": {
       "post": {
-        "description": "Unavailable standalone operation: accounts.logout. Conversation and text-history pagination, paged message search, direct/group texts, encrypted media upload, and guarded My Story publication are implemented. Direct EEL and group TLS-only JPEG snap delivery are live-validated. Incoming friend requests, public profile lookup, own story status reads, and bounded inbox polling are implemented. Owned story metadata is implemented but awaits live validation. Remote story feed listing/deletion and other unvalidated operations remain unavailable.",
+        "description": "Disconnect this service: remove the stored session and cancel queued jobs. Keeps account history, exclusions and delivery records. Does not sign out Chrome or mobile Snapchat, revoke tokens remotely, or stop a request already in flight. Reconnect using the connect command.",
         "operationId": "accounts.logout",
         "parameters": [
           {
@@ -2875,7 +2875,7 @@
             "description": "Local vault or runtime unavailable"
           }
         },
-        "x-standalone-available": false
+        "x-standalone-available": true
       }
     },
     "/v1/accounts/{account_id}/accounts/refresh": {
@@ -6700,7 +6700,7 @@
     },
     "/v1/accounts/{account_id}/conversations/mark_read": {
       "post": {
-        "description": "Unavailable standalone operation: conversations.mark_read. Conversation and text-history pagination, paged message search, direct/group texts, encrypted media upload, and guarded My Story publication are implemented. Direct EEL and group TLS-only JPEG snap delivery are live-validated. Incoming friend requests, public profile lookup, own story status reads, and bounded inbox polling are implemented. Owned story metadata is implemented but awaits live validation. Remote story feed listing/deletion and other unvalidated operations remain unavailable.",
+        "description": "Unavailable standalone operation: conversations.mark_read. Conversation and text-history pagination, paged message search, direct/group texts, encrypted media upload, and guarded My Story publication are implemented. Direct EEL and group TLS-only JPEG snap delivery are live-validated. Incoming friend requests, public profile lookup, own story status reads, and bounded inbox polling are implemented. Owned story metadata is implemented but awaits live validation. Scheduled text batches, service logout, incoming SSE pages, and group request preparation are implemented. Remote story feed listing/deletion and other unvalidated operations remain unavailable.",
         "operationId": "conversations.mark_read",
         "parameters": [
           {
@@ -11160,7 +11160,7 @@
     },
     "/v1/accounts/{account_id}/friends/add": {
       "post": {
-        "description": "Unavailable standalone operation: friends.add. Conversation and text-history pagination, paged message search, direct/group texts, encrypted media upload, and guarded My Story publication are implemented. Direct EEL and group TLS-only JPEG snap delivery are live-validated. Incoming friend requests, public profile lookup, own story status reads, and bounded inbox polling are implemented. Owned story metadata is implemented but awaits live validation. Remote story feed listing/deletion and other unvalidated operations remain unavailable.",
+        "description": "Unavailable standalone operation: friends.add. Conversation and text-history pagination, paged message search, direct/group texts, encrypted media upload, and guarded My Story publication are implemented. Direct EEL and group TLS-only JPEG snap delivery are live-validated. Incoming friend requests, public profile lookup, own story status reads, and bounded inbox polling are implemented. Owned story metadata is implemented but awaits live validation. Scheduled text batches, service logout, incoming SSE pages, and group request preparation are implemented. Remote story feed listing/deletion and other unvalidated operations remain unavailable.",
         "operationId": "friends.add",
         "parameters": [
           {
@@ -11651,7 +11651,7 @@
     },
     "/v1/accounts/{account_id}/friends/block": {
       "post": {
-        "description": "Unavailable standalone operation: friends.block. Conversation and text-history pagination, paged message search, direct/group texts, encrypted media upload, and guarded My Story publication are implemented. Direct EEL and group TLS-only JPEG snap delivery are live-validated. Incoming friend requests, public profile lookup, own story status reads, and bounded inbox polling are implemented. Owned story metadata is implemented but awaits live validation. Remote story feed listing/deletion and other unvalidated operations remain unavailable.",
+        "description": "Unavailable standalone operation: friends.block. Conversation and text-history pagination, paged message search, direct/group texts, encrypted media upload, and guarded My Story publication are implemented. Direct EEL and group TLS-only JPEG snap delivery are live-validated. Incoming friend requests, public profile lookup, own story status reads, and bounded inbox polling are implemented. Owned story metadata is implemented but awaits live validation. Scheduled text batches, service logout, incoming SSE pages, and group request preparation are implemented. Remote story feed listing/deletion and other unvalidated operations remain unavailable.",
         "operationId": "friends.block",
         "parameters": [
           {
@@ -12633,7 +12633,7 @@
     },
     "/v1/accounts/{account_id}/friends/remove": {
       "post": {
-        "description": "Unavailable standalone operation: friends.remove. Conversation and text-history pagination, paged message search, direct/group texts, encrypted media upload, and guarded My Story publication are implemented. Direct EEL and group TLS-only JPEG snap delivery are live-validated. Incoming friend requests, public profile lookup, own story status reads, and bounded inbox polling are implemented. Owned story metadata is implemented but awaits live validation. Remote story feed listing/deletion and other unvalidated operations remain unavailable.",
+        "description": "Unavailable standalone operation: friends.remove. Conversation and text-history pagination, paged message search, direct/group texts, encrypted media upload, and guarded My Story publication are implemented. Direct EEL and group TLS-only JPEG snap delivery are live-validated. Incoming friend requests, public profile lookup, own story status reads, and bounded inbox polling are implemented. Owned story metadata is implemented but awaits live validation. Scheduled text batches, service logout, incoming SSE pages, and group request preparation are implemented. Remote story feed listing/deletion and other unvalidated operations remain unavailable.",
         "operationId": "friends.remove",
         "parameters": [
           {
@@ -13630,7 +13630,7 @@
     },
     "/v1/accounts/{account_id}/friends/unblock": {
       "post": {
-        "description": "Unavailable standalone operation: friends.unblock. Conversation and text-history pagination, paged message search, direct/group texts, encrypted media upload, and guarded My Story publication are implemented. Direct EEL and group TLS-only JPEG snap delivery are live-validated. Incoming friend requests, public profile lookup, own story status reads, and bounded inbox polling are implemented. Owned story metadata is implemented but awaits live validation. Remote story feed listing/deletion and other unvalidated operations remain unavailable.",
+        "description": "Unavailable standalone operation: friends.unblock. Conversation and text-history pagination, paged message search, direct/group texts, encrypted media upload, and guarded My Story publication are implemented. Direct EEL and group TLS-only JPEG snap delivery are live-validated. Incoming friend requests, public profile lookup, own story status reads, and bounded inbox polling are implemented. Owned story metadata is implemented but awaits live validation. Scheduled text batches, service logout, incoming SSE pages, and group request preparation are implemented. Remote story feed listing/deletion and other unvalidated operations remain unavailable.",
         "operationId": "friends.unblock",
         "parameters": [
           {
@@ -14121,7 +14121,7 @@
     },
     "/v1/accounts/{account_id}/groups/add_members": {
       "post": {
-        "description": "Unavailable standalone operation: groups.add_members. Conversation and text-history pagination, paged message search, direct/group texts, encrypted media upload, and guarded My Story publication are implemented. Direct EEL and group TLS-only JPEG snap delivery are live-validated. Incoming friend requests, public profile lookup, own story status reads, and bounded inbox polling are implemented. Owned story metadata is implemented but awaits live validation. Remote story feed listing/deletion and other unvalidated operations remain unavailable.",
+        "description": "Unavailable standalone operation: groups.add_members. Conversation and text-history pagination, paged message search, direct/group texts, encrypted media upload, and guarded My Story publication are implemented. Direct EEL and group TLS-only JPEG snap delivery are live-validated. Incoming friend requests, public profile lookup, own story status reads, and bounded inbox polling are implemented. Owned story metadata is implemented but awaits live validation. Scheduled text batches, service logout, incoming SSE pages, and group request preparation are implemented. Remote story feed listing/deletion and other unvalidated operations remain unavailable.",
         "operationId": "groups.add_members",
         "parameters": [
           {
@@ -14631,7 +14631,7 @@
     },
     "/v1/accounts/{account_id}/groups/create": {
       "post": {
-        "description": "Unavailable standalone operation: groups.create. Conversation and text-history pagination, paged message search, direct/group texts, encrypted media upload, and guarded My Story publication are implemented. Direct EEL and group TLS-only JPEG snap delivery are live-validated. Incoming friend requests, public profile lookup, own story status reads, and bounded inbox polling are implemented. Owned story metadata is implemented but awaits live validation. Remote story feed listing/deletion and other unvalidated operations remain unavailable.",
+        "description": "Unavailable standalone operation: groups.create. Conversation and text-history pagination, paged message search, direct/group texts, encrypted media upload, and guarded My Story publication are implemented. Direct EEL and group TLS-only JPEG snap delivery are live-validated. Incoming friend requests, public profile lookup, own story status reads, and bounded inbox polling are implemented. Owned story metadata is implemented but awaits live validation. Scheduled text batches, service logout, incoming SSE pages, and group request preparation are implemented. Remote story feed listing/deletion and other unvalidated operations remain unavailable.",
         "operationId": "groups.create",
         "parameters": [
           {
@@ -14667,6 +14667,8 @@
                     "type": "array"
                   },
                   "title": {
+                    "description": "New group title for rename preparation, up to 256 UTF-8 bytes.",
+                    "maxLength": 256,
                     "type": "string"
                   }
                 },
@@ -16131,9 +16133,514 @@
         "x-standalone-available": true
       }
     },
+    "/v1/accounts/{account_id}/groups/prepare": {
+      "post": {
+        "description": "Prepare a rename or leave request for a synchronized group and validate the complete packet without submitting it. Actual group mutations remain unavailable because the server has not confirmed a successful change.",
+        "operationId": "groups.prepare",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "account_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "action": {
+                    "description": "Group operation to prepare: rename or leave. Preparation never submits the change.",
+                    "enum": [
+                      "rename",
+                      "leave"
+                    ],
+                    "type": "string"
+                  },
+                  "conversation_id": {
+                    "description": "Snapchat conversation UUID returned by conversations.list; groups.get requires a user-created group.",
+                    "maxLength": 128,
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "title": {
+                    "description": "New group title for rename preparation, up to 256 UTF-8 bytes.",
+                    "maxLength": 256,
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "conversation_id",
+                  "action"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "oneOf": [
+                    {
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "error"
+                      ]
+                    }
+                  ],
+                  "properties": {
+                    "data": {},
+                    "error": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Structured operation result"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "oneOf": [
+                    {
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "error"
+                      ]
+                    }
+                  ],
+                  "properties": {
+                    "data": {},
+                    "error": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Invalid arguments"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "oneOf": [
+                    {
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "error"
+                      ]
+                    }
+                  ],
+                  "properties": {
+                    "data": {},
+                    "error": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "oneOf": [
+                    {
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "error"
+                      ]
+                    }
+                  ],
+                  "properties": {
+                    "data": {},
+                    "error": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Recipient excluded or origin forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "oneOf": [
+                    {
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "error"
+                      ]
+                    }
+                  ],
+                  "properties": {
+                    "data": {},
+                    "error": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Account or resource not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "oneOf": [
+                    {
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "error"
+                      ]
+                    }
+                  ],
+                  "properties": {
+                    "data": {},
+                    "error": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Conflict, uncertain delivery, authentication, or audience verification required"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "oneOf": [
+                    {
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "error"
+                      ]
+                    }
+                  ],
+                  "properties": {
+                    "data": {},
+                    "error": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Upstream rate limit"
+          },
+          "501": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "oneOf": [
+                    {
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "error"
+                      ]
+                    }
+                  ],
+                  "properties": {
+                    "data": {},
+                    "error": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Standalone capability unavailable"
+          },
+          "502": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "oneOf": [
+                    {
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "error"
+                      ]
+                    }
+                  ],
+                  "properties": {
+                    "data": {},
+                    "error": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Upstream protocol or transport failure"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "oneOf": [
+                    {
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "error"
+                      ]
+                    }
+                  ],
+                  "properties": {
+                    "data": {},
+                    "error": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Local vault or runtime unavailable"
+          }
+        },
+        "x-standalone-available": true
+      }
+    },
     "/v1/accounts/{account_id}/groups/remove_members": {
       "post": {
-        "description": "Unavailable standalone operation: groups.remove_members. Conversation and text-history pagination, paged message search, direct/group texts, encrypted media upload, and guarded My Story publication are implemented. Direct EEL and group TLS-only JPEG snap delivery are live-validated. Incoming friend requests, public profile lookup, own story status reads, and bounded inbox polling are implemented. Owned story metadata is implemented but awaits live validation. Remote story feed listing/deletion and other unvalidated operations remain unavailable.",
+        "description": "Unavailable standalone operation: groups.remove_members. Conversation and text-history pagination, paged message search, direct/group texts, encrypted media upload, and guarded My Story publication are implemented. Direct EEL and group TLS-only JPEG snap delivery are live-validated. Incoming friend requests, public profile lookup, own story status reads, and bounded inbox polling are implemented. Owned story metadata is implemented but awaits live validation. Scheduled text batches, service logout, incoming SSE pages, and group request preparation are implemented. Remote story feed listing/deletion and other unvalidated operations remain unavailable.",
         "operationId": "groups.remove_members",
         "parameters": [
           {
@@ -16641,6 +17148,514 @@
         "x-standalone-available": false
       }
     },
+    "/v1/accounts/{account_id}/groups/rename": {
+      "post": {
+        "description": "Rename a group. Unavailable pending a successful server acknowledgment.",
+        "operationId": "groups.rename",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "account_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "conversation_id": {
+                    "description": "Snapchat conversation UUID returned by conversations.list; groups.get requires a user-created group.",
+                    "maxLength": 128,
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "idempotency_key": {
+                    "description": "Stable caller-chosen key for one logical send. Reuse for retries/status; changing it can send another copy.",
+                    "examples": [
+                      "photo-request-001"
+                    ],
+                    "maxLength": 128,
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "title": {
+                    "description": "New group title for rename preparation, up to 256 UTF-8 bytes.",
+                    "maxLength": 256,
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "conversation_id",
+                  "title",
+                  "idempotency_key"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "oneOf": [
+                    {
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "error"
+                      ]
+                    }
+                  ],
+                  "properties": {
+                    "data": {},
+                    "error": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Structured operation result"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "oneOf": [
+                    {
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "error"
+                      ]
+                    }
+                  ],
+                  "properties": {
+                    "data": {},
+                    "error": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Invalid arguments"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "oneOf": [
+                    {
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "error"
+                      ]
+                    }
+                  ],
+                  "properties": {
+                    "data": {},
+                    "error": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "oneOf": [
+                    {
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "error"
+                      ]
+                    }
+                  ],
+                  "properties": {
+                    "data": {},
+                    "error": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Recipient excluded or origin forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "oneOf": [
+                    {
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "error"
+                      ]
+                    }
+                  ],
+                  "properties": {
+                    "data": {},
+                    "error": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Account or resource not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "oneOf": [
+                    {
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "error"
+                      ]
+                    }
+                  ],
+                  "properties": {
+                    "data": {},
+                    "error": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Conflict, uncertain delivery, authentication, or audience verification required"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "oneOf": [
+                    {
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "error"
+                      ]
+                    }
+                  ],
+                  "properties": {
+                    "data": {},
+                    "error": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Upstream rate limit"
+          },
+          "501": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "oneOf": [
+                    {
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "error"
+                      ]
+                    }
+                  ],
+                  "properties": {
+                    "data": {},
+                    "error": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Standalone capability unavailable"
+          },
+          "502": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "oneOf": [
+                    {
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "error"
+                      ]
+                    }
+                  ],
+                  "properties": {
+                    "data": {},
+                    "error": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Upstream protocol or transport failure"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "oneOf": [
+                    {
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "error"
+                      ]
+                    }
+                  ],
+                  "properties": {
+                    "data": {},
+                    "error": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Local vault or runtime unavailable"
+          }
+        },
+        "x-standalone-available": false,
+        "x-unavailable-reason": "Native request preparation is validated, but the server did not confirm success. Use groups.prepare to validate without submitting."
+      }
+    },
     "/v1/accounts/{account_id}/inbox/poll": {
       "post": {
         "description": "Poll incoming texts and snap metadata without opening media or marking chats read. Returns a durable account-bound next_cursor, stable event IDs, and explicit synchronization errors/gap indicators. First poll may include recent backlog. Fetches bounded recent windows only for changed/uninitialized cached conversations; use messages.list for older history pagination.",
@@ -17143,6 +18158,43 @@
         "x-standalone-available": true
       }
     },
+    "/v1/accounts/{account_id}/inbox/stream": {
+      "get": {
+        "description": "Incoming text and snap metadata pages over SSE, backed by bounded polling every 10 seconds. No snap opening or read receipts. Resume using Last-Event-ID or cursor; process each complete inbox.page before saving its opaque checkpoint.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "account_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "cursor",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "Last-Event-ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "text/event-stream": {}
+            },
+            "description": "inbox.page events with durable opaque checkpoint IDs; inbox.error terminates the stream"
+          }
+        }
+      }
+    },
     "/v1/accounts/{account_id}/jobs/cancel": {
       "post": {
         "description": "Cancel an existing job owned by this account.",
@@ -17164,7 +18216,7 @@
                 "additionalProperties": false,
                 "properties": {
                   "job_id": {
-                    "description": "Account-owned local job ID returned by jobs.list.",
+                    "description": "Account-owned local job ID returned by jobs.create or jobs.list.",
                     "maxLength": 128,
                     "minLength": 1,
                     "type": "string"
@@ -17636,7 +18688,7 @@
     },
     "/v1/accounts/{account_id}/jobs/create": {
       "post": {
-        "description": "Unavailable standalone operation: jobs.create. Conversation and text-history pagination, paged message search, direct/group texts, encrypted media upload, and guarded My Story publication are implemented. Direct EEL and group TLS-only JPEG snap delivery are live-validated. Incoming friend requests, public profile lookup, own story status reads, and bounded inbox polling are implemented. Owned story metadata is implemented but awaits live validation. Remote story feed listing/deletion and other unvalidated operations remain unavailable.",
+        "description": "Queue text for 1–25 explicit conversation UUIDs, immediately or at run_at (RFC3339). Encrypted at rest; executes while serve runs. Reusing the same key returns the same job. Destinations and exclusions are rechecked for each send. No automatic retries after failure or uncertainty.",
         "operationId": "jobs.create",
         "parameters": [
           {
@@ -17654,6 +18706,15 @@
               "schema": {
                 "additionalProperties": false,
                 "properties": {
+                  "conversation_ids": {
+                    "description": "Explicit conversation UUIDs from conversations.list; at most 25 entries. Duplicates are removed.",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 25,
+                    "minItems": 1,
+                    "type": "array"
+                  },
                   "idempotency_key": {
                     "description": "Stable caller-chosen key for one logical send. Reuse for retries/status; changing it can send another copy.",
                     "examples": [
@@ -17663,19 +18724,10 @@
                     "minLength": 1,
                     "type": "string"
                   },
-                  "media_id": {
-                    "description": "Account-bound handle returned by media.upload or media.upload_file; never an external URL.",
-                    "maxLength": 128,
-                    "minLength": 1,
+                  "run_at": {
+                    "description": "Optional RFC3339 timestamp with timezone. Omit for immediate execution. Due jobs execute while serve is running, including overdue queued jobs after restart.",
+                    "maxLength": 64,
                     "type": "string"
-                  },
-                  "recipients": {
-                    "description": "Explicit recipient identifiers; duplicates are ignored where applicable. This does not resolve usernames.",
-                    "items": {
-                      "type": "string"
-                    },
-                    "maxItems": 10000,
-                    "type": "array"
                   },
                   "text": {
                     "description": "Message text, preserved verbatim; sending supports at most 16000 UTF-8 bytes.",
@@ -17685,7 +18737,8 @@
                   }
                 },
                 "required": [
-                  "recipients",
+                  "conversation_ids",
+                  "text",
                   "idempotency_key"
                 ],
                 "type": "object"
@@ -18146,7 +19199,7 @@
             "description": "Local vault or runtime unavailable"
           }
         },
-        "x-standalone-available": false
+        "x-standalone-available": true
       }
     },
     "/v1/accounts/{account_id}/jobs/get": {
@@ -18167,7 +19220,7 @@
             "name": "job_id",
             "required": true,
             "schema": {
-              "description": "Account-owned local job ID returned by jobs.list.",
+              "description": "Account-owned local job ID returned by jobs.create or jobs.list.",
               "maxLength": 128,
               "minLength": 1,
               "type": "string"
@@ -19151,6 +20204,497 @@
                 },
                 "required": [
                   "recipients"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "oneOf": [
+                    {
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "error"
+                      ]
+                    }
+                  ],
+                  "properties": {
+                    "data": {},
+                    "error": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Structured operation result"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "oneOf": [
+                    {
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "error"
+                      ]
+                    }
+                  ],
+                  "properties": {
+                    "data": {},
+                    "error": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Invalid arguments"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "oneOf": [
+                    {
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "error"
+                      ]
+                    }
+                  ],
+                  "properties": {
+                    "data": {},
+                    "error": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "oneOf": [
+                    {
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "error"
+                      ]
+                    }
+                  ],
+                  "properties": {
+                    "data": {},
+                    "error": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Recipient excluded or origin forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "oneOf": [
+                    {
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "error"
+                      ]
+                    }
+                  ],
+                  "properties": {
+                    "data": {},
+                    "error": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Account or resource not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "oneOf": [
+                    {
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "error"
+                      ]
+                    }
+                  ],
+                  "properties": {
+                    "data": {},
+                    "error": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Conflict, uncertain delivery, authentication, or audience verification required"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "oneOf": [
+                    {
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "error"
+                      ]
+                    }
+                  ],
+                  "properties": {
+                    "data": {},
+                    "error": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Upstream rate limit"
+          },
+          "501": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "oneOf": [
+                    {
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "error"
+                      ]
+                    }
+                  ],
+                  "properties": {
+                    "data": {},
+                    "error": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Standalone capability unavailable"
+          },
+          "502": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "oneOf": [
+                    {
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "error"
+                      ]
+                    }
+                  ],
+                  "properties": {
+                    "data": {},
+                    "error": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Upstream protocol or transport failure"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "oneOf": [
+                    {
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "error"
+                      ]
+                    }
+                  ],
+                  "properties": {
+                    "data": {},
+                    "error": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Local vault or runtime unavailable"
+          }
+        },
+        "x-standalone-available": true
+      }
+    },
+    "/v1/accounts/{account_id}/jobs/run": {
+      "post": {
+        "description": "Run one due queued text job now and wait for per-destination results. Cannot replay running, completed or uncertain jobs. The background scheduler also claims due jobs, so a conflict may mean it already started.",
+        "operationId": "jobs.run",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "account_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "job_id": {
+                    "description": "Account-owned local job ID returned by jobs.create or jobs.list.",
+                    "maxLength": 128,
+                    "minLength": 1,
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "job_id"
                 ],
                 "type": "object"
               }
@@ -20615,7 +22159,7 @@
     },
     "/v1/accounts/{account_id}/messages/delete": {
       "post": {
-        "description": "Unavailable standalone operation: messages.delete. Conversation and text-history pagination, paged message search, direct/group texts, encrypted media upload, and guarded My Story publication are implemented. Direct EEL and group TLS-only JPEG snap delivery are live-validated. Incoming friend requests, public profile lookup, own story status reads, and bounded inbox polling are implemented. Owned story metadata is implemented but awaits live validation. Remote story feed listing/deletion and other unvalidated operations remain unavailable.",
+        "description": "Unavailable standalone operation: messages.delete. Conversation and text-history pagination, paged message search, direct/group texts, encrypted media upload, and guarded My Story publication are implemented. Direct EEL and group TLS-only JPEG snap delivery are live-validated. Incoming friend requests, public profile lookup, own story status reads, and bounded inbox polling are implemented. Owned story metadata is implemented but awaits live validation. Scheduled text batches, service logout, incoming SSE pages, and group request preparation are implemented. Remote story feed listing/deletion and other unvalidated operations remain unavailable.",
         "operationId": "messages.delete",
         "parameters": [
           {
@@ -22124,7 +23668,7 @@
     },
     "/v1/accounts/{account_id}/messages/react": {
       "post": {
-        "description": "Unavailable standalone operation: messages.react. Conversation and text-history pagination, paged message search, direct/group texts, encrypted media upload, and guarded My Story publication are implemented. Direct EEL and group TLS-only JPEG snap delivery are live-validated. Incoming friend requests, public profile lookup, own story status reads, and bounded inbox polling are implemented. Owned story metadata is implemented but awaits live validation. Remote story feed listing/deletion and other unvalidated operations remain unavailable.",
+        "description": "Unavailable standalone operation: messages.react. Conversation and text-history pagination, paged message search, direct/group texts, encrypted media upload, and guarded My Story publication are implemented. Direct EEL and group TLS-only JPEG snap delivery are live-validated. Incoming friend requests, public profile lookup, own story status reads, and bounded inbox polling are implemented. Owned story metadata is implemented but awaits live validation. Scheduled text batches, service logout, incoming SSE pages, and group request preparation are implemented. Remote story feed listing/deletion and other unvalidated operations remain unavailable.",
         "operationId": "messages.react",
         "parameters": [
           {
@@ -22633,7 +24177,7 @@
     },
     "/v1/accounts/{account_id}/messages/save": {
       "post": {
-        "description": "Unavailable standalone operation: messages.save. Conversation and text-history pagination, paged message search, direct/group texts, encrypted media upload, and guarded My Story publication are implemented. Direct EEL and group TLS-only JPEG snap delivery are live-validated. Incoming friend requests, public profile lookup, own story status reads, and bounded inbox polling are implemented. Owned story metadata is implemented but awaits live validation. Remote story feed listing/deletion and other unvalidated operations remain unavailable.",
+        "description": "Unavailable standalone operation: messages.save. Conversation and text-history pagination, paged message search, direct/group texts, encrypted media upload, and guarded My Story publication are implemented. Direct EEL and group TLS-only JPEG snap delivery are live-validated. Incoming friend requests, public profile lookup, own story status reads, and bounded inbox polling are implemented. Owned story metadata is implemented but awaits live validation. Scheduled text batches, service logout, incoming SSE pages, and group request preparation are implemented. Remote story feed listing/deletion and other unvalidated operations remain unavailable.",
         "operationId": "messages.save",
         "parameters": [
           {
@@ -25155,7 +26699,7 @@
     },
     "/v1/accounts/{account_id}/requests/accept": {
       "post": {
-        "description": "Unavailable standalone operation: requests.accept. Conversation and text-history pagination, paged message search, direct/group texts, encrypted media upload, and guarded My Story publication are implemented. Direct EEL and group TLS-only JPEG snap delivery are live-validated. Incoming friend requests, public profile lookup, own story status reads, and bounded inbox polling are implemented. Owned story metadata is implemented but awaits live validation. Remote story feed listing/deletion and other unvalidated operations remain unavailable.",
+        "description": "Unavailable standalone operation: requests.accept. Conversation and text-history pagination, paged message search, direct/group texts, encrypted media upload, and guarded My Story publication are implemented. Direct EEL and group TLS-only JPEG snap delivery are live-validated. Incoming friend requests, public profile lookup, own story status reads, and bounded inbox polling are implemented. Owned story metadata is implemented but awaits live validation. Scheduled text batches, service logout, incoming SSE pages, and group request preparation are implemented. Remote story feed listing/deletion and other unvalidated operations remain unavailable.",
         "operationId": "requests.accept",
         "parameters": [
           {
@@ -26137,7 +27681,7 @@
     },
     "/v1/accounts/{account_id}/requests/reject": {
       "post": {
-        "description": "Unavailable standalone operation: requests.reject. Conversation and text-history pagination, paged message search, direct/group texts, encrypted media upload, and guarded My Story publication are implemented. Direct EEL and group TLS-only JPEG snap delivery are live-validated. Incoming friend requests, public profile lookup, own story status reads, and bounded inbox polling are implemented. Owned story metadata is implemented but awaits live validation. Remote story feed listing/deletion and other unvalidated operations remain unavailable.",
+        "description": "Unavailable standalone operation: requests.reject. Conversation and text-history pagination, paged message search, direct/group texts, encrypted media upload, and guarded My Story publication are implemented. Direct EEL and group TLS-only JPEG snap delivery are live-validated. Incoming friend requests, public profile lookup, own story status reads, and bounded inbox polling are implemented. Owned story metadata is implemented but awaits live validation. Scheduled text batches, service logout, incoming SSE pages, and group request preparation are implemented. Remote story feed listing/deletion and other unvalidated operations remain unavailable.",
         "operationId": "requests.reject",
         "parameters": [
           {
@@ -26628,7 +28172,7 @@
     },
     "/v1/accounts/{account_id}/search/users": {
       "get": {
-        "description": "Unavailable standalone operation: search.users. Conversation and text-history pagination, paged message search, direct/group texts, encrypted media upload, and guarded My Story publication are implemented. Direct EEL and group TLS-only JPEG snap delivery are live-validated. Incoming friend requests, public profile lookup, own story status reads, and bounded inbox polling are implemented. Owned story metadata is implemented but awaits live validation. Remote story feed listing/deletion and other unvalidated operations remain unavailable.",
+        "description": "Unavailable standalone operation: search.users. Conversation and text-history pagination, paged message search, direct/group texts, encrypted media upload, and guarded My Story publication are implemented. Direct EEL and group TLS-only JPEG snap delivery are live-validated. Incoming friend requests, public profile lookup, own story status reads, and bounded inbox polling are implemented. Owned story metadata is implemented but awaits live validation. Scheduled text batches, service logout, incoming SSE pages, and group request preparation are implemented. Remote story feed listing/deletion and other unvalidated operations remain unavailable.",
         "operationId": "search.users",
         "parameters": [
           {
@@ -27112,7 +28656,7 @@
     },
     "/v1/accounts/{account_id}/snaps/open": {
       "post": {
-        "description": "Unavailable standalone operation: snaps.open. Conversation and text-history pagination, paged message search, direct/group texts, encrypted media upload, and guarded My Story publication are implemented. Direct EEL and group TLS-only JPEG snap delivery are live-validated. Incoming friend requests, public profile lookup, own story status reads, and bounded inbox polling are implemented. Owned story metadata is implemented but awaits live validation. Remote story feed listing/deletion and other unvalidated operations remain unavailable.",
+        "description": "Unavailable standalone operation: snaps.open. Conversation and text-history pagination, paged message search, direct/group texts, encrypted media upload, and guarded My Story publication are implemented. Direct EEL and group TLS-only JPEG snap delivery are live-validated. Incoming friend requests, public profile lookup, own story status reads, and bounded inbox polling are implemented. Owned story metadata is implemented but awaits live validation. Scheduled text batches, service logout, incoming SSE pages, and group request preparation are implemented. Remote story feed listing/deletion and other unvalidated operations remain unavailable.",
         "operationId": "snaps.open",
         "parameters": [
           {
@@ -29576,7 +31120,7 @@
     },
     "/v1/accounts/{account_id}/stories/list": {
       "get": {
-        "description": "Unavailable standalone operation: stories.list. Conversation and text-history pagination, paged message search, direct/group texts, encrypted media upload, and guarded My Story publication are implemented. Direct EEL and group TLS-only JPEG snap delivery are live-validated. Incoming friend requests, public profile lookup, own story status reads, and bounded inbox polling are implemented. Owned story metadata is implemented but awaits live validation. Remote story feed listing/deletion and other unvalidated operations remain unavailable.",
+        "description": "Unavailable standalone operation: stories.list. Conversation and text-history pagination, paged message search, direct/group texts, encrypted media upload, and guarded My Story publication are implemented. Direct EEL and group TLS-only JPEG snap delivery are live-validated. Incoming friend requests, public profile lookup, own story status reads, and bounded inbox polling are implemented. Owned story metadata is implemented but awaits live validation. Scheduled text batches, service logout, incoming SSE pages, and group request preparation are implemented. Remote story feed listing/deletion and other unvalidated operations remain unavailable.",
         "operationId": "stories.list",
         "parameters": [
           {
@@ -32047,7 +33591,7 @@
     },
     "/v1/accounts/{account_id}/stories/view": {
       "post": {
-        "description": "Unavailable standalone operation: stories.view. Conversation and text-history pagination, paged message search, direct/group texts, encrypted media upload, and guarded My Story publication are implemented. Direct EEL and group TLS-only JPEG snap delivery are live-validated. Incoming friend requests, public profile lookup, own story status reads, and bounded inbox polling are implemented. Owned story metadata is implemented but awaits live validation. Remote story feed listing/deletion and other unvalidated operations remain unavailable.",
+        "description": "Unavailable standalone operation: stories.view. Conversation and text-history pagination, paged message search, direct/group texts, encrypted media upload, and guarded My Story publication are implemented. Direct EEL and group TLS-only JPEG snap delivery are live-validated. Incoming friend requests, public profile lookup, own story status reads, and bounded inbox polling are implemented. Owned story metadata is implemented but awaits live validation. Scheduled text batches, service logout, incoming SSE pages, and group request preparation are implemented. Remote story feed listing/deletion and other unvalidated operations remain unavailable.",
         "operationId": "stories.view",
         "parameters": [
           {

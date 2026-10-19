@@ -90,7 +90,7 @@ func TestIsolationAndRestart(t *testing.T) {
 		t.Fatal(job, err)
 	}
 	result := s.Call(ctx, "jobs.create", map[string]any{"account_id": a.ID, "recipients": []any{"friend"}, "idempotency_key": "key"})
-	if result.Error == nil || result.Error.Code != "unsupported_capability" {
+	if result.Error == nil || result.Error.Code != "invalid_argument" {
 		t.Fatal(result)
 	}
 	jobs, err := s.Jobs(ctx, a.ID, "", 100)
@@ -191,6 +191,10 @@ func TestMCPHTTPParity(t *testing.T) {
 		t.Fatal(err)
 	}
 	h := s.Handler("secret")
+	scheduled, err := s.CreateTextJob(context.Background(), a.ID, []string{lookupConversation}, "parity fixture", "2030-01-01T00:00:00Z", "parity-job")
+	if err != nil {
+		t.Fatal(err)
+	}
 	httpServer := httptest.NewServer(h)
 	defer httpServer.Close()
 	server, err := MCPServer(httpServer.URL, "secret", MCPOptions{IncludeUnavailable: true})
@@ -232,6 +236,9 @@ func TestMCPHTTPParity(t *testing.T) {
 		args                     map[string]any
 	}{
 
+		{"jobs.create", "POST", "/v1/accounts/" + a.ID + "/jobs/create", `{"conversation_ids":["` + lookupConversation + `"],"text":"parity fixture","run_at":"2030-01-01T00:00:00Z","idempotency_key":"parity-job"}`, map[string]any{"account_id": a.ID, "conversation_ids": []any{lookupConversation}, "text": "parity fixture", "run_at": "2030-01-01T00:00:00Z", "idempotency_key": "parity-job"}},
+		{"jobs.run", "POST", "/v1/accounts/" + a.ID + "/jobs/run", `{"job_id":"` + scheduled.ID + `"}`, map[string]any{"account_id": a.ID, "job_id": scheduled.ID}},
+		{"groups.prepare", "POST", "/v1/accounts/" + a.ID + "/groups/prepare", `{"conversation_id":"` + lookupGroup + `","action":"rename"}`, map[string]any{"account_id": a.ID, "conversation_id": lookupGroup, "action": "rename"}},
 		{"friends.search", "GET", "/v1/accounts/" + a.ID + "/friends/search?query=sam&limit=1", "", map[string]any{"account_id": a.ID, "query": "sam", "limit": float64(1)}},
 		{"recipients.resolve", "GET", "/v1/accounts/" + a.ID + "/recipients/resolve?query=alice", "", map[string]any{"account_id": a.ID, "query": "alice"}},
 		{"conversations.get", "GET", "/v1/accounts/" + a.ID + "/conversations/get?conversation_id=" + lookupConversation, "", map[string]any{"account_id": a.ID, "conversation_id": lookupConversation}},

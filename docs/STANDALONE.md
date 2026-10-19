@@ -58,8 +58,8 @@ disabled. Authenticated direct/group preparation passed before live JPEG tests.
   counter does not establish deletion. The test story was not deleted through
   this service.
 - Remote story feeds/viewing, snap opening, accepting requests, group management,
-  remote user search, reactions, quoted replies, batch jobs, and push subscriptions are
-  unavailable in the standalone API.
+  remote user search, reactions, quoted replies, native push and webhooks are
+  unavailable. Text jobs and polling-backed incoming SSE are available.
 - Events describe local service changes, not Snapchat notifications.
 - `protocol_ready: false` denotes incomplete overall coverage; consult individual
   capabilities for implemented operations.
@@ -152,3 +152,33 @@ coverage; no live incoming snap was opened for validation. No messages were sent
 and no read receipts were submitted. Expired stored credentials correctly
 reported `reauth_required`; capturing the existing signed-in browser session
 restored polling without changing device keys.
+
+## Scheduling, streams, and account disconnect (0.7.0)
+
+A persisted text job was claimed by the scheduler and delivered to one explicitly
+selected direct conversation. Snapchat returned a matching successful message
+acknowledgment. A stable job key prevents the live test from sending again.
+Scheduled group texts reuse the existing group send path; live group text delivery
+still has no new evidence.
+
+Fixtures cover encrypted job content, duplicate creation, account isolation,
+restart execution, future times, cancellation, changed exclusions, competing
+workers, uncertain outcomes, and scheduler shutdown. Incoming SSE fixtures cover
+complete-page checkpointing, reconnects, and cross-account cursor rejection.
+The SSE endpoint uses the validated inbox poller and does not open snap media.
+
+Service logout fixtures verify session removal, queued-job cancellation, retained
+account identity, late-refresh rejection, and reconnection by the same user.
+No live logout was performed on the working account.
+
+Rename and leave requests passed authenticated preparation without submission.
+A live rename/restore check received matching responses without a successful
+update flag; a subsequent read confirmed the saved original title. Actual group
+changes remain disabled. Packet fixtures reject changed actors, destinations,
+titles, leave targets, versions, additional actions, and malformed frames.
+
+Opt-in preparation uses `TestLiveGroupActionPreparation` with
+`QQ_SNAP_LIVE_ACCOUNT`, `QQ_SNAP_LIVE_DATA_DIR`, and an explicitly selected
+`QQ_SNAP_LIVE_GROUP_CONVERSATION`. `TestLiveScheduledText` additionally requires
+`QQ_SNAP_LIVE_MUTATE=true` and `QQ_SNAP_LIVE_CONVERSATION`. It sends one text using
+a fixed job key. These tests skip by default and never run in ordinary CI.

@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"errors"
 	"os/exec"
 	"strconv"
@@ -107,4 +108,72 @@ func (s *Store) Diagnostics(ctx context.Context, account string) (AccountDiagnos
 		d.Counts[table] = count
 	}
 	return d, nil
+}
+
+// DisconnectAccount forgets this service's credentials. Browser/mobile sessions are unaffected.
+func (s *Store) DisconnectAccount(ctx context.Context, account string) (any, error) {
+	unlock, err := s.lockAccount(ctx, account)
+	if err != nil {
+		return nil, err
+	}
+	defer unlock()
+	if _, err = s.Account(ctx, account); err != nil {
+		return nil, err
+	}
+	// Legacy installations predate persistent identity bindings. Preserve identity
+	// before deleting credentials so reconnect cannot mix two users' history.
+	var bound string
+	err = s.db.QueryRowContext(ctx, "SELECT user_id FROM account_identities WHERE account_id=?", account).Scan(&bound)
+	if err == sql.ErrNoRows {
+		raw, readErr := s.LoadSecret(ctx, s.vault, account)
+		if readErr != nil && readErr != sql.ErrNoRows {
+			return nil, fail("vault_unavailable", "unlock credential storage once to preserve this account identity before disconnecting", 409)
+		}
+		if readErr == nil {
+			var identity struct {
+				UserID string `json:"user_id"`
+			}
+			if json.Unmarshal(raw, &identity) != nil || identity.UserID == "" {
+				return nil, fail("invalid_session", "cannot preserve account identity", 409)
+			}
+			if _, err = s.db.ExecContext(ctx, "INSERT OR IGNORE INTO account_identities VALUES(?,?)", account, identity.UserID); err != nil {
+				return nil, err
+			}
+		}
+	} else if err != nil {
+		return nil, err
+	}
+	tx, err := s.db.BeginTx(ctx, nil)
+	if err != nil {
+		return nil, err
+	}
+	defer tx.Rollback()
+	removed, err := tx.ExecContext(ctx, "DELETE FROM secrets WHERE account_id=?", account)
+	if err != nil {
+		return nil, err
+	}
+	n, err := removed.RowsAffected()
+	if err != nil {
+		return nil, err
+	}
+	cancelled, err := tx.ExecContext(ctx, "UPDATE jobs SET state='cancelled' WHERE account_id=? AND state='queued'", account)
+	if err != nil {
+		return nil, err
+	}
+	count, err := cancelled.RowsAffected()
+	if err != nil {
+		return nil, err
+	}
+	if _, err = tx.ExecContext(ctx, "UPDATE accounts SET status='disconnected' WHERE id=?", account); err != nil {
+		return nil, err
+	}
+	if n > 0 || count > 0 {
+		if err = appendEvent(ctx, tx, account, "account.disconnected", map[string]any{"cancelled_jobs": count}); err != nil {
+			return nil, err
+		}
+	}
+	if err = tx.Commit(); err != nil {
+		return nil, err
+	}
+	return map[string]any{"account_id": account, "session_removed": n > 0, "cancelled_jobs": count, "status": "disconnected", "browser_session_unchanged": true}, nil
 }

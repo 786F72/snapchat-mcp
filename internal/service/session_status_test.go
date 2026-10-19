@@ -61,9 +61,9 @@ func TestSessionStatusIsolationAndRedaction(t *testing.T) {
 
 func TestSessionStatusRejectsIncompleteSnapshots(t *testing.T) {
 	s := testStore(t)
-	a := account(t, s, "one")
 	s.vault = Vault{Key: func() (string, error) { return base64.StdEncoding.EncodeToString(make([]byte, 32)), nil }}
 	for _, raw := range []string{`bad json`, `{"version":1,"user_id":"bad","auth_token":"secret","identity_storage":"secret"}`, `{"version":1,"user_id":"` + fixtureSelf + `"}`} {
+		a := account(t, s, "incomplete fixture")
 		if err := s.SaveSecret(context.Background(), s.vault, a.ID, []byte(raw)); err != nil {
 			t.Fatal(err)
 		}

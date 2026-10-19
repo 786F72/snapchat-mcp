@@ -9,9 +9,9 @@ import (
 	"unicode/utf8"
 )
 
-const Version = "0.6.0"
+const Version = "0.7.0"
 
-const ProtocolBlocker = "Conversation and text-history pagination, paged message search, direct/group texts, encrypted media upload, and guarded My Story publication are implemented. Direct EEL and group TLS-only JPEG snap delivery are live-validated. Incoming friend requests, public profile lookup, own story status reads, and bounded inbox polling are implemented. Owned story metadata is implemented but awaits live validation. Remote story feed listing/deletion and other unvalidated operations remain unavailable."
+const ProtocolBlocker = "Conversation and text-history pagination, paged message search, direct/group texts, encrypted media upload, and guarded My Story publication are implemented. Direct EEL and group TLS-only JPEG snap delivery are live-validated. Incoming friend requests, public profile lookup, own story status reads, and bounded inbox polling are implemented. Owned story metadata is implemented but awaits live validation. Scheduled text batches, service logout, incoming SSE pages, and group request preparation are implemented. Remote story feed listing/deletion and other unvalidated operations remain unavailable."
 
 type Error struct {
 	Code    string         `json:"code"`
@@ -103,13 +103,21 @@ func Operations() []Operation {
 		Operation{Name: "media.upload_file", Description: "Encrypt and upload a local PNG/JPEG/MP4 file from an operator-configured media root on the HTTP server host. Requires serve --media-root. Returns a media handle, not file contents or encryption keys. Does not send or publish.", Available: true, Account: true, Mutation: true, Properties: map[string]any{"path": prop("string"), "mime_type": prop("string")}, Required: []string{"path", "mime_type"}},
 	)
 
+	ops = append(ops,
+		Operation{Name: "accounts.logout", Description: "Disconnect this service: remove the stored session and cancel queued jobs. Keeps account history, exclusions and delivery records. Does not sign out Chrome or mobile Snapchat, revoke tokens remotely, or stop a request already in flight. Reconnect using the connect command.", Available: true, Mutation: true, Account: true},
+		Operation{Name: "groups.prepare", Description: "Prepare a rename or leave request for a synchronized group and validate the complete packet without submitting it. Actual group mutations remain unavailable because the server has not confirmed a successful change.", Available: true, Account: true, Properties: map[string]any{"conversation_id": prop("string"), "action": map[string]any{"type": "string", "enum": []string{"rename", "leave"}}, "title": prop("string")}, Required: []string{"conversation_id", "action"}},
+		Operation{Name: "groups.rename", Description: "Rename a group. Unavailable pending a successful server acknowledgment.", UnavailableReason: "Native request preparation is validated, but the server did not confirm success. Use groups.prepare to validate without submitting.", Mutation: true, Account: true, Properties: map[string]any{"conversation_id": prop("string"), "title": prop("string"), "idempotency_key": prop("string")}, Required: []string{"conversation_id", "title", "idempotency_key"}},
+		Operation{Name: "jobs.create", Description: "Queue text for 1–25 explicit conversation UUIDs, immediately or at run_at (RFC3339). Encrypted at rest; executes while serve runs. Reusing the same key returns the same job. Destinations and exclusions are rechecked for each send. No automatic retries after failure or uncertainty.", Available: true, Mutation: true, Account: true, Properties: map[string]any{"conversation_ids": map[string]any{"type": "array", "items": prop("string"), "minItems": 1, "maxItems": 25}, "text": prop("string"), "run_at": prop("string"), "idempotency_key": prop("string")}, Required: []string{"conversation_ids", "text", "idempotency_key"}},
+		Operation{Name: "jobs.run", Description: "Run one due queued text job now and wait for per-destination results. Cannot replay running, completed or uncertain jobs. The background scheduler also claims due jobs, so a conflict may mean it already started.", Available: true, Mutation: true, Account: true, Properties: map[string]any{"job_id": prop("string")}, Required: []string{"job_id"}},
+	)
+
 	groups := []struct {
 		names      string
 		mutation   bool
 		properties map[string]any
 		required   []string
 	}{
-		{"accounts.login accounts.logout", true, nil, nil},
+		{"accounts.login", true, nil, nil},
 		{"friends.add friends.remove friends.block friends.unblock requests.accept requests.reject", true, map[string]any{"recipient_id": prop("string")}, []string{"recipient_id"}},
 		{"search.users", false, map[string]any{"query": prop("string")}, []string{"query"}},
 		{"stories.list", false, map[string]any{"cursor": prop("string"), "limit": prop("integer")}, nil},
@@ -118,7 +126,6 @@ func Operations() []Operation {
 		{"groups.add_members groups.remove_members", true, map[string]any{"conversation_id": prop("string"), "recipients": arrayProp(), "idempotency_key": prop("string")}, []string{"conversation_id", "recipients", "idempotency_key"}},
 		{"snaps.open stories.view", true, map[string]any{"content_id": prop("string")}, []string{"content_id"}},
 		{"conversations.mark_read", true, map[string]any{"conversation_id": prop("string")}, []string{"conversation_id"}},
-		{"jobs.create", true, map[string]any{"recipients": arrayProp(), "text": prop("string"), "media_id": prop("string"), "idempotency_key": prop("string")}, []string{"recipients", "idempotency_key"}},
 	}
 	for _, g := range groups {
 		for _, n := range strings.Fields(g.names) {
@@ -131,7 +138,7 @@ func Operations() []Operation {
 	return ops
 }
 func (o Operation) Method() string {
-	if o.Mutation || o.Name == "inbox.poll" || o.Name == "jobs.preview" || o.Name == "messages.prepare" || o.Name == "snaps.prepare" || o.Name == "stories.prepare" {
+	if o.Mutation || o.Name == "groups.prepare" || o.Name == "inbox.poll" || o.Name == "jobs.preview" || o.Name == "messages.prepare" || o.Name == "snaps.prepare" || o.Name == "stories.prepare" {
 		return "POST"
 	}
 	return "GET"
@@ -183,6 +190,14 @@ func validate(o Operation, in map[string]any) error {
 			}
 		}
 		bounds := schema.(map[string]any)
+		if a, ok := v.([]any); ok {
+			if min, ok := bounds["minItems"].(int); ok {
+				valid = valid && len(a) >= min
+			}
+			if max, ok := bounds["maxItems"].(int); ok {
+				valid = valid && len(a) <= max
+			}
+		}
 		if text, ok := v.(string); ok {
 			n := utf8.RuneCountInString(text)
 			if min, ok := bounds["minLength"].(int); ok {
@@ -399,6 +414,20 @@ func (s *Store) call(ctx context.Context, name string, in map[string]any) (any, 
 			}
 		}
 		return map[string]any{"eligible": eligible, "excluded": skipped, "friendship_verified": false, "can_submit": false, "blocker": ProtocolBlocker}, nil
+	case "accounts.logout":
+		return s.DisconnectAccount(ctx, account)
+	case "groups.prepare":
+		title, _ := in["title"].(string)
+		return s.PrepareGroupAction(ctx, account, in["conversation_id"].(string), in["action"].(string), title)
+	case "jobs.create":
+		ids := []string{}
+		for _, v := range in["conversation_ids"].([]any) {
+			ids = append(ids, v.(string))
+		}
+		runAt, _ := in["run_at"].(string)
+		return s.CreateTextJob(ctx, account, ids, in["text"].(string), runAt, in["idempotency_key"].(string))
+	case "jobs.run":
+		return s.RunDueJob(ctx, account, in["job_id"].(string))
 	case "jobs.list":
 		return s.Jobs(ctx, account, cursor, limit)
 	case "jobs.get", "jobs.cancel":

@@ -113,3 +113,24 @@ and its processed metadata checkpoint is one transaction; failures remain
 pending for later polls. Metadata scan position is also durable. Inbox records
 are separate from `events.list`, which still describes local service activity.
 No automatic inbox retention/pruning policy is implemented in this release.
+
+## Incoming event stream
+
+`GET /v1/accounts/{account_id}/inbox/stream` returns server-sent events (SSE),
+using the same bearer token as other HTTP endpoints. Each connection polls the
+bounded inbox, waits ten seconds after a page, then polls again. This lets HTTP
+clients keep one connection open instead of making repeated polling requests.
+It does not use Snapchat push notifications or webhooks. MCP clients continue
+to use `snapchat_inbox_poll`.
+
+Each `inbox.page` event contains a complete `InboxPage` JSON object and an `id`
+equal to its opaque `next_cursor`. Process the entire page before saving its
+checkpoint. Reconnect with `Last-Event-ID: CHECKPOINT` or `?cursor=CHECKPOINT`.
+The header takes precedence. A partial network frame must not advance your
+checkpoint; stable event IDs let you deduplicate a replay.
+
+Empty pages are emitted too. Check `sync.errors` and gap indicators even when
+there are no messages. A top-level polling failure after streaming starts emits
+`inbox.error` with a sanitized code and closes the stream. Invalid initial
+checkpoints return an ordinary HTTP error. Snap media stays unopened, and no
+read receipts are sent.

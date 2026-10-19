@@ -9,7 +9,9 @@ Snapchat HTTP API and MCP server.
 | Friends | List and search friends, check incoming requests, look up public profiles |
 | Chats | List conversations and groups, read older messages, search message text |
 | Messages | Send texts and JPEG snaps to friends or groups |
-| Inbox | Check for incoming texts and snap notifications without opening snaps |
+| Inbox | Poll incoming texts and snap notifications, or receive them over an HTTP event stream |
+| Automation | Schedule texts and send batches to up to 25 chats |
+| Accounts | Check sessions, refresh your login, and disconnect the service |
 | Stories | Publish to My Story for friends or your saved custom audience |
 | Uploads | Upload PNG, JPEG, and MP4 files for use in snaps and stories |
 | Delivery history | Check whether Snapchat accepted a send and look up previous attempts |
@@ -126,6 +128,10 @@ pass it to tools that operate on your Snapchat account.
 | Upload a file | `snapchat_media_upload_file` |
 | Send an uploaded snap | `snapchat_snaps_send` |
 | Publish an uploaded story | `snapchat_stories_publish` |
+| Schedule texts or create a batch | `snapchat_jobs_create` |
+| Check or cancel a job | `snapchat_jobs_get` or `snapchat_jobs_cancel` |
+| Disconnect the service | `snapchat_accounts_logout` |
+| Preview a group rename or leave request | `snapchat_groups_prepare` |
 | Check a send | `snapchat_deliveries_get` or `snapchat_deliveries_list` |
 
 Search messages one conversation at a time. Pass `next_cursor` to continue into
@@ -136,6 +142,11 @@ to refresh them.
 Inbox polling returns text and snap details, not snap images. Save and reuse its
 `next_cursor` after every call. See [inbox polling](docs/INBOX.md) for the response
 fields and limits.
+
+Use `snapchat_jobs_create` with `conversation_ids`, `text`, and an
+`idempotency_key`. Add `run_at` as a timestamp with a timezone to schedule it.
+Leave `serve` running; queued jobs survive restarts. See [scheduled sends](docs/JOBS.md)
+for progress, cancellation, and retry behavior.
 
 For file uploads, start the server with a directory it can read:
 
@@ -172,7 +183,8 @@ an account by its saved label; `connect` creates it if it doesn't exist.
   been tested.
 - Message history only includes messages Snapchat still returns. It cannot
   recover expired or deleted messages.
-- Inbox polling checks recent activity; it isn't a push notification service.
+- Inbox streams check recent activity through polling. Native Snapchat push
+  notifications and webhooks are not implemented.
 
 See [tested features and limitations](docs/STANDALONE.md) for details.
 
@@ -186,7 +198,8 @@ See [security](SECURITY.md) for storage details.
 ## Documentation
 
 - [HTTP API reference](docs/API.md)
-- [Inbox polling](docs/INBOX.md)
+- [Inbox polling and streaming](docs/INBOX.md)
+- [Scheduled sends and batches](docs/JOBS.md)
 - [Tested features and limitations](docs/STANDALONE.md)
 - [How it works](docs/ARCHITECTURE.md)
 - [Development](CONTRIBUTING.md)

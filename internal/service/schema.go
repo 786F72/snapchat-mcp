@@ -25,7 +25,11 @@ func enrichOperation(op *Operation) {
 		"message_id":        "Stable server message ID returned by message history or a delivery receipt.",
 		"content_id":        "Content identifier returned by the corresponding Snapchat operation.",
 		"audience":          "Choose friends-only My Story or the account's saved custom audience; public story publishing is not supported.",
-		"job_id":            "Account-owned local job ID returned by jobs.list.",
+		"job_id":            "Account-owned local job ID returned by jobs.create or jobs.list.",
+		"conversation_ids":  "Explicit conversation UUIDs from conversations.list; at most 25 entries. Duplicates are removed.",
+		"run_at":            "Optional RFC3339 timestamp with timezone. Omit for immediate execution. Due jobs execute while serve is running, including overdue queued jobs after restart.",
+		"action":            "Group operation to prepare: rename or leave. Preparation never submits the change.",
+		"title":             "New group title for rename preparation, up to 256 UTF-8 bytes.",
 	}
 	for name, value := range op.Properties {
 		original := value.(map[string]any)
@@ -42,6 +46,10 @@ func enrichOperation(op *Operation) {
 		case "query", "idempotency_key", "recipient_id", "conversation_id", "media_id", "job_id", "participant_id", "sender_id":
 			schema["minLength"] = 1
 			schema["maxLength"] = 128
+		case "title":
+			schema["maxLength"] = 256
+		case "run_at":
+			schema["maxLength"] = 64
 		case "path":
 			schema["minLength"] = 1
 			schema["maxLength"] = 4096

@@ -30,7 +30,7 @@ func MCPServer(endpoint, token string, options ...MCPOptions) (*mcp.Server, erro
 		}
 		openWorld := true
 		switch op.Name {
-		case "accounts.rename", "accounts.diagnostics", "conversations.search", "groups.list", "deliveries.list":
+		case "accounts.logout", "jobs.create", "accounts.rename", "accounts.diagnostics", "conversations.search", "groups.list", "deliveries.list":
 			openWorld = false
 		case "accounts.list", "accounts.create", "accounts.get", "accounts.session_status", "accounts.verify_keys", "accounts.verify_session", "stories.published", "capabilities.list", "exclusions.list", "exclusions.replace", "exclusions.add", "exclusions.remove", "friends.search", "recipients.resolve", "conversations.get", "groups.get", "deliveries.get", "events.list", "jobs.preview", "jobs.list", "jobs.get", "jobs.cancel":
 			openWorld = false

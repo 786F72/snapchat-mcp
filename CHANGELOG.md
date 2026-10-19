@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.7.0 — 2026-10-19
+
+- Added scheduled text sends and batches for up to 25 explicit conversations,
+  with encrypted content, durable jobs, per-destination results, cancellation,
+  and duplicate prevention. An authorized scheduler test received a matching
+  successful Snapchat acknowledgment.
+- Added incoming SSE pages with resumable checkpoints, backed by bounded inbox
+  polling. Native push notifications and webhooks remain unimplemented.
+- Added service logout, queued-job cancellation, and same-identity reconnect
+  protection. Browser and mobile sessions are unaffected.
+- Added validated rename/leave request preparation. Actual group changes stay
+  disabled because live responses did not confirm success.
+- Added scheduler, disconnect, stream, and packet fixtures, plus API documentation.
+
 ## 0.6.0 — 2026-10-19
 
 - Enabled `messages.list` pagination with encrypted account/conversation-bound

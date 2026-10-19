@@ -67,3 +67,67 @@ func TestDiagnosticsAreLocalIsolatedAndRedacted(t *testing.T) {
 		t.Fatal(r)
 	}
 }
+
+func TestDisconnectAccountRemovesSessionAndCancelsOnlyOwnedQueuedJobs(t *testing.T) {
+	s, a, b := lookupFixture(t)
+	ctx := context.Background()
+	for _, tc := range []struct{ id, account, state string }{{"queued-a", a.ID, "queued"}, {"running-a", a.ID, "running"}, {"queued-b", b.ID, "queued"}} {
+		if _, err := s.db.Exec("INSERT INTO jobs VALUES(?,?,?,?,?)", tc.id, tc.account, tc.state, []byte(`{}`), now()); err != nil {
+			t.Fatal(err)
+		}
+	}
+	before, _ := s.LoadSecret(ctx, s.vault, a.ID)
+	if len(before) == 0 {
+		t.Fatal("missing fixture session")
+	}
+	r, err := s.DisconnectAccount(ctx, a.ID)
+	if err != nil || r.(map[string]any)["session_removed"] != true {
+		t.Fatal(r, err)
+	}
+	if _, err = s.LoadSecret(ctx, s.vault, a.ID); err == nil {
+		t.Fatal("session retained")
+	}
+	for _, tc := range []struct{ id, account, state string }{{"queued-a", a.ID, "cancelled"}, {"running-a", a.ID, "running"}, {"queued-b", b.ID, "queued"}} {
+		j, err := s.Job(ctx, tc.account, tc.id, false)
+		if err != nil || j.State != tc.state {
+			t.Fatal(j, err)
+		}
+	}
+	r, err = s.DisconnectAccount(ctx, a.ID)
+	if err != nil || r.(map[string]any)["session_removed"] != false {
+		t.Fatal(r, err)
+	}
+	status, err := s.SessionStatus(ctx, a.ID)
+	if err != nil || status.CredentialsStored || status.NextAction != "connect" {
+		t.Fatal(status, err)
+	}
+	excluded, _ := s.Exclusions(ctx, a.ID)
+	if len(excluded) != 1 || excluded[0] != fixtureExcluded {
+		t.Fatal("exclusions changed")
+	}
+}
+
+func TestDisconnectedAccountCannotBeReboundOrResurrectedByRefresh(t *testing.T) {
+	s, a, _ := lookupFixture(t)
+	ctx := context.Background()
+	old, _ := s.LoadSecret(ctx, s.vault, a.ID)
+	if _, err := s.DisconnectAccount(ctx, a.ID); err != nil {
+		t.Fatal(err)
+	}
+	if err := s.SaveSecret(ctx, s.vault, a.ID, old); publicError(err).Code != "reauth_required" {
+		t.Fatal("late refresh resurrected session", err)
+	}
+	var snapshot SessionSnapshot
+	json.Unmarshal(old, &snapshot)
+	snapshot.UserID = fixtureBob
+	different, _ := json.Marshal(snapshot)
+	if err := s.CaptureSession(ctx, s.vault, a.ID, different); publicError(err).Code != "identity_mismatch" {
+		t.Fatal("account rebound after logout", err)
+	}
+	if err := s.CaptureSession(ctx, s.vault, a.ID, old); err != nil {
+		t.Fatal("same user could not reconnect", err)
+	}
+	if _, err := s.LoadSecret(ctx, s.vault, a.ID); err != nil {
+		t.Fatal(err)
+	}
+}

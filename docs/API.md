@@ -1,10 +1,37 @@
-# Local API and MCP
+# Snapchat HTTP API and MCP
 
 This release implements local account management, exclusions, event history,
 recipient previews, standalone refresh, confirmed friend synchronization, paginated
 conversations, text history, direct/group texts and snaps, encrypted media uploads,
 guarded My Story publishing, incoming requests, public identity lookup, and own
-story status reads. See [validation and limits](STANDALONE.md).
+story status reads, scheduled text batches, service logout, and incoming SSE
+streams. See [validation and limits](STANDALONE.md).
+
+## Scheduled sends, logout, and group preparation (0.7.0)
+
+| Operation | Method and account-relative route | Inputs |
+| --- | --- | --- |
+| `jobs.create` | POST `jobs/create` | `conversation_ids`, `text`, `idempotency_key`; optional `run_at` |
+| `jobs.run` | POST `jobs/run` | `job_id` |
+| `accounts.logout` | POST `accounts/logout` | None |
+| `groups.prepare` | POST `groups/prepare` | `conversation_id`, `action` (`rename` or `leave`); `title` for rename |
+
+See [scheduled sends and batches](JOBS.md) for job states, encrypted content,
+cancellation, restart behavior, and per-destination delivery keys. The incoming
+HTTP stream is `GET inbox/stream`; see [inbox streaming](INBOX.md#incoming-event-stream).
+
+`accounts.logout` removes this service's stored session and cancels queued jobs.
+It preserves account history, exclusions, and delivery records. Chrome and mobile
+sessions remain signed in; tokens are not revoked remotely, and a request already
+in flight can finish. A late refresh cannot restore the deleted session. Use
+`connect` to sign the same Snapchat identity back in; logout does not allow
+rebinding an existing account's history to another user.
+
+`groups.prepare` validates a complete rename or leave request and returns
+`prepared: true`, `submitted: false`. Rename requires a nonblank title up to 256
+UTF-8 bytes. Leave accepts no title. Actual group changes remain unavailable:
+a live response matched the request but did not confirm success. Preparation
+does not imply that Snapchat will accept the change.
 
 ## Connection status and reconnecting
 
@@ -185,7 +212,8 @@ friendships or submit batch jobs.
 | Exclusion list/replace/explicit merge import | Available locally |
 | Durable event polling and HTTP streaming | Available for local changes |
 | Recipient preview | Available; no friendship verification |
-| Job list/get/cancel infrastructure | Available; no new job submission |
+| Scheduled text batches | Create/list/get/cancel and run due jobs; up to 25 explicit chats |
+| Service logout | Removes stored credentials and cancels queued jobs; browser/mobile sessions stay signed in |
 | OS keyring-backed encrypted credential vault | Available; per-account authenticated encryption |
 | Browser-assisted credential capture | Available through `bootstrap` |
 | Standalone session refresh | Available and validated with Chromium closed |
@@ -205,15 +233,15 @@ friendships or submit batch jobs.
 | Media upload | PNG/JPEG and H.264/AAC MP4; fresh AES-256-CBC keys; encrypted account storage |
 | Snap delivery | Direct EEL and group TLS-only JPEG delivery live-validated; video delivery untested |
 | Explicit snap viewing | Unavailable |
-| Group creation and membership management | Standalone unavailable |
+| Group creation and membership management | Changes unavailable; rename/leave request preparation available |
 | My Story publishing | Implemented; packet preparation validated; explicit friends/custom audience, exclusions enforced |
 | Remote story listing/viewing/deletion | Unavailable |
 | Inbox polling | Incoming text/snap metadata, durable encrypted log and cursors; bounded recent windows |
-| Batch dispatch and push subscriptions | Unavailable |
+| Incoming SSE stream | Available through bounded polling; no native push or webhooks |
 
 The binary also retains legacy browser CLI diagnostics, described in
 [LEGACY.md](LEGACY.md). HTTP and MCP do not invoke these commands. Account
-metadata defaults to text-only; the service starts no monitors or campaigns.
+metadata defaults to text-only; only explicitly queued jobs are dispatched by the scheduler.
 
 ## MCP setup
 

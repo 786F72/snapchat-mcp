@@ -30,8 +30,11 @@ var inboxMessageScript string
 //go:embed history_message.mjs
 var historyMessageScript string
 
+//go:embed native_actions.mjs
+var nativeActionsScript string
+
 func nativeClientSource() string {
-	return packetScript + "\n" + mediaUploadScript + "\n" + inboxMessageScript + "\n" + historyMessageScript + "\n" + clientScript
+	return packetScript + "\n" + mediaUploadScript + "\n" + inboxMessageScript + "\n" + historyMessageScript + "\n" + nativeActionsScript + "\n" + clientScript
 }
 
 // Keep native source and credentials off argv. In particular, Windows limits

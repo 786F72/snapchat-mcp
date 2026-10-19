@@ -98,7 +98,7 @@ func runBootstrap(ctx context.Context, args []string, out io.Writer) error {
 	if err != nil {
 		return fmt.Errorf("cannot encode bootstrap")
 	}
-	if err = store.SaveSecret(ctx, vault, *account, material); err != nil {
+	if err = store.CaptureSession(ctx, vault, *account, material); err != nil {
 		return fmt.Errorf("cannot persist encrypted bootstrap")
 	}
 	return json.NewEncoder(out).Encode(map[string]any{"account_id": *account, "bootstrap_captured": true, "root_wrapping_key_captured": len(snapshot.RootWrappingKey) > 0, "protocol_ready": false, "status": "protocol_blocked", "blocker": service.ProtocolBlocker})
