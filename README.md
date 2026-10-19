@@ -1,7 +1,6 @@
 # Snapchat MCP
 
-A local Snapchat HTTP API and stdio MCP server. One account-scoped operation
-registry drives both interfaces and the generated OpenAPI specification.
+Snapchat HTTP API and MCP server.
 
 Public repository: **786F72/snapchat-mcp**. This unofficial integration uses
 pinned Snapchat web runtime assets and implements a limited set of operations.
