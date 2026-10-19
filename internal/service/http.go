@@ -58,6 +58,12 @@ func (s *Store) Handler(token string) http.Handler {
 						return
 					}
 					in[k] = float64(n)
+				} else if k == "match_case" && name == "messages.search" {
+					if v[0] != "true" && v[0] != "false" {
+						JSON(w, 400, Result{Error: fail("invalid_argument", "match_case must be true or false", 400)})
+						return
+					}
+					in[k] = v[0] == "true"
 				} else {
 					in[k] = v[0]
 				}

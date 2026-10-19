@@ -13,6 +13,7 @@ observed behavior, not a guarantee for every account or runtime version.
 | Friends | Full Atlas sync, confirmed mutual friends only, exclusions applied |
 | Conversations | Multiple pages reached end of feed without duplicate entries |
 | Text history | Direct/group text matched reference history; stable server IDs |
+| History pagination/search | Three-page direct/group reads and search continuation; no media opens/read receipts |
 | Direct text | Authorized EEL send independently verified in server history |
 | Group text | Packet preparation validated; live delivery not tested |
 | Media upload | PNG, JPEG, H.264 MP4 uploaded with encrypted account-bound handles |
@@ -49,14 +50,15 @@ disabled. Authenticated direct/group preparation passed before live JPEG tests.
 
 - Video snap delivery and video story publishing have not been live-tested.
 - Group text delivery has preparation evidence only.
-- Message history pagination is incomplete; `has_more` does not imply supported
-  pagination. Conversation metadata pagination is implemented.
+- History pagination covers retained text, skipping media content. It cannot
+  recover messages Snapchat no longer returns. Inbox polling still scans bounded
+  recent windows rather than automatically walking older history.
 - Own story metadata is implemented but disabled pending live validation.
 - Story deletion is unimplemented and unavailable. A missing record or zero
   counter does not establish deletion. The test story was not deleted through
   this service.
 - Remote story feeds/viewing, snap opening, accepting requests, group management,
-  search, reactions, quoted replies, batch jobs, and push subscriptions are
+  remote user search, reactions, quoted replies, batch jobs, and push subscriptions are
   unavailable in the standalone API.
 - Events describe local service changes, not Snapchat notifications.
 - `protocol_ready: false` denotes incomplete overall coverage; consult individual
@@ -66,6 +68,18 @@ Unavailable operations return HTTP 501 / MCP `isError` with
 `unsupported_capability`. There is no browser fallback.
 
 ## Checks
+
+Version 0.6.0 adds history pagination and page-scoped search. Native continuation
+requires SDK-local handles, not stable server IDs; using server IDs repeats the
+first page. Handles (including zero) stay inside encrypted cursors with a server
+boundary for progress validation. Fixtures cover account/conversation/filter
+isolation, expiry, restart recovery, media-only pages, and mid-fetch exclusions.
+
+Opt-in `TestLiveHistoryPagination`, with `QQ_SNAP_LIVE_ACCOUNT` and
+`QQ_SNAP_LIVE_DATA_DIR` set, validated three pages of direct and group history,
+search continuation, and direct-text preparation without submission. It logs
+aggregate results only. The launcher regression test executes over 40 KiB of
+source through stdin and verifies source/credentials are absent from argv.
 
 Connection and local discovery tools added in 0.4.0/0.5.0 use fixture coverage
 for account selection, incomplete/locked sessions, credential redaction,

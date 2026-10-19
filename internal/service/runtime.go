@@ -27,8 +27,24 @@ var mediaUploadScript string
 //go:embed inbox_message.mjs
 var inboxMessageScript string
 
+//go:embed history_message.mjs
+var historyMessageScript string
+
 func nativeClientSource() string {
-	return packetScript + "\n" + mediaUploadScript + "\n" + inboxMessageScript + "\n" + clientScript
+	return packetScript + "\n" + mediaUploadScript + "\n" + inboxMessageScript + "\n" + historyMessageScript + "\n" + clientScript
+}
+
+// Keep native source and credentials off argv. In particular, Windows limits
+// command lines to roughly 32 KiB, below the combined embedded adapter size.
+func nativeCommand(ctx context.Context, source, dir string, material []byte) *exec.Cmd {
+	const loader = `let raw='';try{for await(const chunk of process.stdin){raw+=chunk;if(raw.length>4*1024*1024)throw Error()}const input=JSON.parse(raw);globalThis.__qqSnapshot=JSON.parse(input.snapshot);await import('data:text/javascript;base64,'+Buffer.from(input.source).toString('base64'))}catch{console.log(JSON.stringify({ready:false,stage:'bootstrap',error:'Native bootstrap failed.'}));process.exit(1)}`
+	payload, _ := json.Marshal(struct {
+		Source   string `json:"source"`
+		Snapshot string `json:"snapshot"`
+	}{source, string(material)})
+	cmd := exec.CommandContext(ctx, "node", "--input-type=module", "--eval", loader, dir)
+	cmd.Stdin = bytes.NewReader(payload)
+	return cmd
 }
 
 func (s *Store) ProbeKeys(ctx context.Context, account string) (any, error) {
@@ -99,8 +115,7 @@ func (s *Store) ProbeSession(ctx context.Context, account string) (any, error) {
 	}
 	ctx, cancel := context.WithTimeout(ctx, 20*time.Second)
 	defer cancel()
-	cmd := exec.CommandContext(ctx, "node", "--input-type=module", "--eval", nativeClientSource(), s.runtimeDir)
-	cmd.Stdin = bytes.NewReader(material)
+	cmd := nativeCommand(ctx, nativeClientSource(), s.runtimeDir, material)
 	var output bytes.Buffer
 	cmd.Stdout = &cappedOutput{buffer: &output, remaining: 65536}
 	err = cmd.Run()
@@ -129,8 +144,7 @@ func (s *Store) NativeFeed(ctx context.Context, account string) (any, error) {
 	material, _ = json.Marshal(input)
 	ctx, cancel := context.WithTimeout(ctx, 40*time.Second)
 	defer cancel()
-	cmd := exec.CommandContext(ctx, "node", "--input-type=module", "--eval", nativeClientSource(), s.runtimeDir)
-	cmd.Stdin = bytes.NewReader(material)
+	cmd := nativeCommand(ctx, nativeClientSource(), s.runtimeDir, material)
 	var output bytes.Buffer
 	cmd.Stdout = &cappedOutput{buffer: &output, remaining: 6 << 20}
 	err = cmd.Run()
@@ -181,10 +195,10 @@ func (s *Store) NativeFeed(ctx context.Context, account string) (any, error) {
 }
 
 func (s *Store) NativeMessages(ctx context.Context, account, conversationID, cursor string, limit int) (any, error) {
-	return s.nativeMessages(ctx, account, conversationID, cursor, limit, "messages")
+	return s.MessageHistory(ctx, account, conversationID, cursor, limit)
 }
 
-func (s *Store) nativeMessages(ctx context.Context, account, conversationID, cursor string, limit int, operation string) (any, error) {
+func (s *Store) nativeMessages(ctx context.Context, account, conversationID, cursor string, limit int, operation string, serverBefore ...string) (any, error) {
 	var raw []byte
 	err := s.db.QueryRowContext(ctx, "SELECT data FROM conversations WHERE account_id=? AND id=?", account, conversationID).Scan(&raw)
 	if err != nil {
@@ -219,12 +233,14 @@ func (s *Store) nativeMessages(ctx context.Context, account, conversationID, cur
 	input["conversation_version"] = conversation.Version
 	input["conversation_id"] = conversationID
 	input["cursor"] = cursor
+	if len(serverBefore) > 0 {
+		input["before_server"] = serverBefore[0]
+	}
 	input["limit"] = limit
 	material, _ = json.Marshal(input)
 	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
 	defer cancel()
-	cmd := exec.CommandContext(ctx, "node", "--input-type=module", "--eval", nativeClientSource(), s.runtimeDir)
-	cmd.Stdin = bytes.NewReader(material)
+	cmd := nativeCommand(ctx, nativeClientSource(), s.runtimeDir, material)
 	var output bytes.Buffer
 	cmd.Stdout = &cappedOutput{buffer: &output, remaining: 1 << 20}
 	err = cmd.Run()

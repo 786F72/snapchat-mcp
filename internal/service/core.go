@@ -9,9 +9,9 @@ import (
 	"unicode/utf8"
 )
 
-const Version = "0.5.0"
+const Version = "0.6.0"
 
-const ProtocolBlocker = "Conversation pagination, direct/group texts, encrypted media upload, and guarded My Story publication are implemented. Direct EEL and group TLS-only JPEG snap delivery are live-validated. Incoming friend requests, public profile lookup, own story status reads, and bounded inbox polling are implemented. Owned story metadata is implemented but awaits live validation. Message pagination, remote story feed listing/deletion, and other unvalidated operations remain unavailable."
+const ProtocolBlocker = "Conversation and text-history pagination, paged message search, direct/group texts, encrypted media upload, and guarded My Story publication are implemented. Direct EEL and group TLS-only JPEG snap delivery are live-validated. Incoming friend requests, public profile lookup, own story status reads, and bounded inbox polling are implemented. Owned story metadata is implemented but awaits live validation. Remote story feed listing/deletion and other unvalidated operations remain unavailable."
 
 type Error struct {
 	Code    string         `json:"code"`
@@ -69,7 +69,7 @@ func Operations() []Operation {
 		{Name: "stories.publish", Description: "Publish uploaded media to friends-only My Story with an explicit friends or saved custom audience and durable idempotency. One friends-audience image publication was acknowledged by Snapchat. Exclusions apply by default; ignore_exclusions explicitly overrides them for this request only. Returns audience_not_verified without publishing if the audience is empty, stale, unverified, or includes an excluded viewer without an explicit override.", Available: true, Mutation: true, Account: true, Properties: map[string]any{"ignore_exclusions": map[string]any{"type": "boolean", "default": false, "description": "Allow excluded viewers for this story request only; never alters the exclusion list."}, "audience": map[string]any{"type": "string", "enum": []string{"friends", "custom"}}, "media_id": prop("string"), "idempotency_key": prop("string")}, Required: []string{"audience", "media_id", "idempotency_key"}},
 		{Name: "messages.prepare", Description: "Build and validate an encrypted direct or group text packet without submitting it.", Available: true, Account: true, Properties: map[string]any{"conversation_id": prop("string"), "text": prop("string")}, Required: []string{"conversation_id", "text"}},
 		{Name: "messages.send", Description: "Send direct or group text using the native SDK encryption policy (EEL for direct texts; transport encryption for groups). Requires a synchronized conversation and durable idempotency key. Checks exclusions against synchronized membership; quoted replies are unavailable.", Available: true, Mutation: true, Account: true, Properties: map[string]any{"conversation_id": prop("string"), "text": prop("string"), "reply_to": prop("string"), "idempotency_key": prop("string")}, Required: []string{"conversation_id", "text", "idempotency_key"}},
-		{Name: "messages.list", Description: "Fetch text history from a synchronized conversation without marking messages read or opening snaps.", Available: true, Account: true, Properties: map[string]any{"conversation_id": prop("string"), "cursor": prop("string"), "limit": prop("integer")}, Required: []string{"conversation_id"}},
+		{Name: "messages.list", Description: "Fetch paginated text history from a synchronized conversation, newest server IDs first. Continue with the opaque next_cursor, bound to account/conversation and expiring after one hour. Media-only pages may have no text items and still have more history. Never marks messages read or opens snaps.", Available: true, Account: true, Properties: map[string]any{"conversation_id": prop("string"), "cursor": prop("string"), "limit": prop("integer")}, Required: []string{"conversation_id"}},
 		{Name: "conversations.list", Description: "Synchronize conversation metadata through the standalone native client. Does not open snaps or mark chats read.", Available: true, Account: true, Properties: map[string]any{"cursor": prop("string"), "limit": prop("integer")}},
 		{Name: "accounts.verify_session", Description: "Offline native messaging session initialization probe. Network and key writes remain disabled.", Available: true, Account: true},
 		{Name: "accounts.verify_keys", Description: "Offline key restoration probe using pinned Snapchat WASM under Node; no network or key registration. Requires captured root key and installed runtime assets.", Available: true, Account: true},
@@ -85,13 +85,14 @@ func Operations() []Operation {
 		{Name: "jobs.cancel", Description: "Cancel an existing job owned by this account.", Available: true, Account: true, Mutation: true, Properties: map[string]any{"job_id": prop("string")}, Required: []string{"job_id"}},
 	}
 	ops = append(ops,
+		Operation{Name: "messages.search", Description: "Search one page of this conversation's text history by literal substring, optionally filtering sender UUID and matching case. Follow next_cursor to scan older pages; an empty result can still have more history. Cursors expire after one hour and are bound to account, conversation, and filters. Never opens snaps or marks messages read.", Available: true, Account: true, Properties: map[string]any{"conversation_id": prop("string"), "query": prop("string"), "sender_id": prop("string"), "match_case": prop("boolean"), "cursor": prop("string"), "limit": prop("integer")}, Required: []string{"conversation_id", "query"}},
 		Operation{Name: "accounts.rename", Description: "Rename a local account label without changing Snapchat identity, credentials, or profile. Records an event only when the label changes.", Available: true, Mutation: true, Account: true, Properties: map[string]any{"label": prop("string")}, Required: []string{"label"}},
 		Operation{Name: "accounts.diagnostics", Description: "Check local Node runtime, stored session material, installed runtime files, and account-scoped cache counts. Never contacts Snapchat or exports credentials. ready_for_verification is not a live authentication guarantee.", Available: true, Account: true},
 		Operation{Name: "conversations.search", Description: "Search cached conversation titles, IDs, or participant UUIDs without network access. Applies exclusions and optional participant_id filtering. Each result includes snapshot age; refresh conversations.list to update the cache. Cursor is the last returned conversation UUID; retain filters across pages.", Available: true, Account: true, Properties: map[string]any{"query": prop("string"), "participant_id": prop("string"), "cursor": prop("string"), "limit": prop("integer")}, Required: []string{"query"}},
 		Operation{Name: "groups.list", Description: "List cached user-created groups with optional title/UUID query and participant UUID filtering. Applies exclusions and reports snapshot age. No remote membership changes or synchronization. Retain filters across cursor pages.", Available: true, Account: true, Properties: map[string]any{"query": prop("string"), "participant_id": prop("string"), "cursor": prop("string"), "limit": prop("integer")}},
 		Operation{Name: "deliveries.list", Description: "List this account's local delivery attempts and redacted receipts, optionally filtered by state. Orders by idempotency key, not time. Reuse next_cursor with the same filter; never sends or retries content. Only not_sent attempts permit same-key retry.", Available: true, Account: true, Properties: map[string]any{"state": prop("string"), "cursor": prop("string"), "limit": prop("integer")}},
 		Operation{Name: "accounts.session_status", Description: "Inspect this account's encrypted local session and runtime installation. Returns capture/refresh timestamps and a suggested next action, never credentials. No network requests; captured does not mean the session is still valid. Use accounts.verify_session for a live check.", Available: true, Account: true},
-		Operation{Name: "inbox.poll", Description: "Poll incoming texts and snap metadata without opening media or marking chats read. Returns a durable account-bound next_cursor, stable event IDs, and explicit synchronization errors/gap indicators. First poll may include recent backlog. Fetches history only for changed/uninitialized cached conversations, with bounded work; full history pagination remains unavailable.", Available: true, Account: true, Properties: map[string]any{"cursor": prop("string"), "limit": prop("integer"), "max_conversations": prop("integer")}},
+		Operation{Name: "inbox.poll", Description: "Poll incoming texts and snap metadata without opening media or marking chats read. Returns a durable account-bound next_cursor, stable event IDs, and explicit synchronization errors/gap indicators. First poll may include recent backlog. Fetches bounded recent windows only for changed/uninitialized cached conversations; use messages.list for older history pagination.", Available: true, Account: true, Properties: map[string]any{"cursor": prop("string"), "limit": prop("integer"), "max_conversations": prop("integer")}},
 		Operation{Name: "friends.search", Description: "Search the synchronized confirmed-friend snapshot by username, display name, or UUID. Applies exclusions, reports snapshot age, and never performs a network sync. Call friends.list to refresh.", Available: true, Account: true, Properties: map[string]any{"query": prop("string"), "cursor": prop("string"), "limit": prop("integer")}, Required: []string{"query"}},
 		Operation{Name: "recipients.resolve", Description: "Resolve an exact username, UUID, or unique exact display name from the friend snapshot. Partial or ambiguous matches return candidates without choosing a recipient. Exclusions and self filtering apply; stale data does not prove send eligibility.", Available: true, Account: true, Properties: map[string]any{"query": prop("string")}, Required: []string{"query"}},
 		Operation{Name: "conversations.get", Description: "Get one account-scoped cached conversation, including title, participants, version, and snapshot age. Blocks excluded participants. Refresh conversations.list first when missing or stale.", Available: true, Account: true, Properties: map[string]any{"conversation_id": prop("string")}, Required: []string{"conversation_id"}},
@@ -259,6 +260,12 @@ func (s *Store) call(ctx context.Context, name string, in map[string]any) (any, 
 	}
 	cursor, _ := in["cursor"].(string)
 	switch name {
+	case "messages.search":
+		if _, ok := in["limit"]; !ok {
+			limit = 40
+		}
+		sender, _ := in["sender_id"].(string)
+		return s.SearchMessages(ctx, account, in["conversation_id"].(string), in["query"].(string), sender, cursor, limit, in["match_case"] == true)
 	case "accounts.rename":
 		return s.RenameAccount(ctx, account, in["label"].(string))
 	case "accounts.diagnostics":
@@ -330,9 +337,6 @@ func (s *Store) call(ctx context.Context, name string, in map[string]any) (any, 
 		}
 		if limit > 100 {
 			return nil, fail("invalid_argument", "message limit must be 1–100", 400)
-		}
-		if cursor != "" {
-			return nil, fail("unsupported_capability", "message pagination is not yet validated", 501)
 		}
 		return s.NativeMessages(ctx, account, in["conversation_id"].(string), cursor, limit)
 	case "conversations.list":

@@ -9,7 +9,6 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"math/big"
-	"os/exec"
 	"strings"
 	"time"
 )
@@ -94,8 +93,7 @@ func (s *Store) sendContent(ctx context.Context, account, conversationID, text, 
 	}
 	runCtx, cancel := context.WithTimeout(ctx, 45*time.Second)
 	defer cancel()
-	cmd := exec.CommandContext(runCtx, "node", "--input-type=module", "--eval", nativeClientSource(), s.runtimeDir)
-	cmd.Stdin = bytes.NewReader(material)
+	cmd := nativeCommand(runCtx, nativeClientSource(), s.runtimeDir, material)
 	var output bytes.Buffer
 	cmd.Stdout = &cappedOutput{buffer: &output, remaining: 1 << 20}
 	progress := &progressWriter{store: s, account: account, key: key}
@@ -354,8 +352,7 @@ func (s *Store) prepareContent(ctx context.Context, account, conversationID, tex
 	}
 	ctx, cancel := context.WithTimeout(ctx, 40*time.Second)
 	defer cancel()
-	cmd := exec.CommandContext(ctx, "node", "--input-type=module", "--eval", nativeClientSource(), s.runtimeDir)
-	cmd.Stdin = bytes.NewReader(material)
+	cmd := nativeCommand(ctx, nativeClientSource(), s.runtimeDir, material)
 	var output bytes.Buffer
 	cmd.Stdout = &cappedOutput{buffer: &output, remaining: 1 << 20}
 	progress := &progressWriter{store: s, account: account, key: "prepare-only"}

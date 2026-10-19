@@ -5,7 +5,6 @@ import (
 	"context"
 	"encoding/json"
 	"os"
-	"os/exec"
 	"strings"
 	"testing"
 	"time"
@@ -48,8 +47,7 @@ func TestOfflinePreuploadedMediaNativeContract(t *testing.T) {
 	source = strings.Replace(source, "packet:packetInfo,conversation_id:snapshot.conversation_id", "packet:packetInfo,events,conversation_id:snapshot.conversation_id", 1)
 	ctx, cancel := context.WithTimeout(context.Background(), 40*time.Second)
 	defer cancel()
-	cmd := exec.CommandContext(ctx, "node", "--input-type=module", "--eval", source, s.runtimeDir)
-	cmd.Stdin = bytes.NewReader(material)
+	cmd := nativeCommand(ctx, source, s.runtimeDir, material)
 	var stdout bytes.Buffer
 	cmd.Stdout = &cappedOutput{buffer: &stdout, remaining: 1 << 20}
 	var result struct {

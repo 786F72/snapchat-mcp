@@ -88,7 +88,8 @@ check after one minute. Historical reads are bounded by `max_conversations` and
 run concurrently, with a 60-second synchronization deadline.
 
 The existing native fetch retrieves a recent window of up to 100 events per
-conversation. This feature does not implement full message history pagination.
+conversation. Inbox polling does not paginate older history automatically; use
+`messages.list` or `messages.search` separately for that, starting in 0.6.0.
 `history_gap_possible` lists conversations whose window may omit earlier events
 or no longer overlaps the previous checkpoint. Gap flags persist across lost
 responses/restarts and are not silently cleared. Events that expire before a

@@ -13,7 +13,8 @@ pinned Snapchat web runtime assets and implements a limited set of operations.
 | Accounts | Account isolation, local renaming, encrypted credential capture, standalone refresh, status and diagnostics |
 | Contacts | Confirmed friends, local search/resolution, incoming requests, public identity, exclusions |
 | Inbox | Cursor-based polling for incoming texts and snap metadata; no viewing/read receipts |
-| Conversations | Paginated metadata, cached search and group listing, text history |
+| Conversations | Paginated metadata, cached search and group listing, paginated text history |
+| Message search | Paged literal text search with sender and case filters |
 | Texts | Direct EEL and group transport-encrypted sending with durable idempotency |
 | Media | Encrypted PNG/JPEG and H.264/AAC MP4 uploads from bytes or allowed local files |
 | Snaps | Direct EEL and group TLS-only JPEG delivery acknowledged in live tests |
@@ -140,9 +141,9 @@ a cursor can replay events; use stable `event_id` values to deduplicate.
 
 The first poll may include recent backlog. Check `sync.errors`,
 `sync.more_work`, and `sync.history_gap_possible` before interpreting an empty
-page as no activity. Polling fetches bounded recent windows; full message history
-pagination remains unavailable. Snap events contain metadata only and polling
-never opens media or marks chats read. See [inbox details](docs/INBOX.md).
+page as no activity. Polling fetches bounded recent windows; page through older
+retained text separately with `messages.list`. Snap events contain metadata only,
+and polling never opens media or marks chats read. See [inbox details](docs/INBOX.md).
 
 ## Tools for common tasks
 
@@ -162,6 +163,11 @@ never opens media or marks chats read. See [inbox details](docs/INBOX.md).
   profile or captured credentials.
 - `snapchat_accounts_diagnostics`: inspect local connection prerequisites and
   account-scoped cache counts.
+- `snapchat_messages_list`: page through older retained text history, using each
+  `next_cursor` with the same conversation. Media-only pages can have no texts.
+- `snapchat_messages_search`: search one history page for a literal `query`, with
+  optional `sender_id` and `match_case`. Follow cursors even after empty matches;
+  search scans available history page by page rather than all chats at once.
 - `snapchat_media_upload_file`: upload a file without passing base64 to the model.
 
 Local file upload requires an explicit directory on the server host:

@@ -168,6 +168,9 @@ func TestVaultAccountBinding(t *testing.T) {
 }
 func TestMCPHTTPParity(t *testing.T) {
 	s, a, _ := lookupFixture(t)
+	s.historySource = func(context.Context, string, string, string, string, int) (historyWindow, error) {
+		return historyWindow{Items: []HistoryMessage{{"7", fixtureAlice, "Fixture text", 100}}, Total: 1}, nil
+	}
 	mediaPath := filepath.Join(t.TempDir(), "photo.png")
 	mediaBody, _ := json.Marshal(map[string]any{"path": mediaPath, "mime_type": "image/png"})
 	if _, err := s.db.Exec("INSERT INTO deliveries VALUES(?,?,?,?,?,?)", a.ID, "replay", sendHash("conversation", "text", ""), "sent", []byte(`{"acknowledged":true}`), now()); err != nil {
@@ -241,6 +244,8 @@ func TestMCPHTTPParity(t *testing.T) {
 		{"accounts.diagnostics", "GET", "/v1/accounts/" + a.ID + "/accounts/diagnostics", "", map[string]any{"account_id": a.ID}},
 		{"accounts.rename", "POST", "/v1/accounts/" + a.ID + "/accounts/rename", `{"label":"renamed"}`, map[string]any{"account_id": a.ID, "label": "renamed"}},
 		{"groups.list", "GET", "/v1/accounts/" + a.ID + "/groups/list", "", map[string]any{"account_id": a.ID}},
+		{"messages.list", "GET", "/v1/accounts/" + a.ID + "/messages/list?conversation_id=" + lookupConversation, "", map[string]any{"account_id": a.ID, "conversation_id": lookupConversation}},
+		{"messages.search", "GET", "/v1/accounts/" + a.ID + "/messages/search?conversation_id=" + lookupConversation + "&query=Fixture&match_case=true", "", map[string]any{"account_id": a.ID, "conversation_id": lookupConversation, "query": "Fixture", "match_case": true}},
 		{"conversations.search", "GET", "/v1/accounts/" + a.ID + "/conversations/search?query=fixture", "", map[string]any{"account_id": a.ID, "query": "fixture"}},
 		{"deliveries.list", "GET", "/v1/accounts/" + a.ID + "/deliveries/list?state=sent&limit=2", "", map[string]any{"account_id": a.ID, "state": "sent", "limit": float64(2)}},
 		{"snaps.send", "POST", "/v1/accounts/" + a.ID + "/snaps/send", `{"conversation_id":"conversation","media_id":"fixture-media","idempotency_key":"replay-snap"}`, map[string]any{"account_id": a.ID, "conversation_id": "conversation", "media_id": "fixture-media", "idempotency_key": "replay-snap"}},

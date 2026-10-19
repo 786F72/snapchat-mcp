@@ -18,14 +18,15 @@ import (
 )
 
 type Store struct {
-	db           *sql.DB
-	accountLocks sync.Map
-	inboxLocks   sync.Map
-	inboxSource  inboxSource
-	vault        Vault
-	mediaMu      sync.RWMutex
-	mediaRoots   []string
-	runtimeDir   string
+	db            *sql.DB
+	accountLocks  sync.Map
+	inboxLocks    sync.Map
+	inboxSource   inboxSource
+	historySource func(context.Context, string, string, string, string, int) (historyWindow, error)
+	vault         Vault
+	mediaMu       sync.RWMutex
+	mediaRoots    []string
+	runtimeDir    string
 }
 type Account struct {
 	ID        string `json:"id"`

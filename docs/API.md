@@ -194,7 +194,7 @@ friendships or submit batch jobs.
 | Confirmed friend synchronization/list | Available through Atlas; excluded IDs omitted; cursor pagination |
 | User search | Unavailable |
 | Conversation pagination | Available; account-bound opaque cursors expire after one hour |
-| Text history | DM/group text; stable server IDs; no read markers or snap opening |
+| Text history/search | Paginated DM/group text; server IDs; sender/case filters; no read markers or snap opening |
 | Direct text sending | EEL encryption; durable idempotency; confirmed friend snapshot under one hour old |
 | Group text sending | Native SDK transport encryption; current membership and exclusions checked |
 | Incoming friend requests | Full standalone sync; exclusions and ignored requests filtered; no viewed/accept changes |
@@ -278,9 +278,28 @@ after one hour. The live check reached the end across multiple pages of visible
 conversations with no duplicates. Concurrent Snapchat activity may change paging
 order; clients should deduplicate conversation IDs.
 `messages/list?conversation_id=UUID&limit=40` returns text events only, with stable
-server message IDs. The default limit is 40, maximum 100. `has_more` may be true,
-but message cursor pagination is unavailable and returns 501. These reads do not
-mark messages read or open snaps.
+server message IDs ordered newest first. The default limit is 40, maximum 100.
+Since 0.6.0, reuse `next_cursor` with the same conversation to fetch older retained
+history. Cursors are encrypted at rest, account/conversation/operation-bound,
+survive restarts, and expire after one hour. Invalid, expired, wrong-conversation,
+or changed-filter cursors return `invalid_cursor`. These reads do not mark chats
+read or open snaps.
+
+`messages/search?conversation_id=UUID&query=weekend` scans one history page for a
+literal substring. Optional `sender_id` filters an exact sender UUID;
+`match_case=true` enables case sensitivity (default false). HTTP booleans must be
+`true` or `false`; MCP accepts a JSON boolean. Queries permit 1–128 characters.
+`limit` bounds remote events scanned, not matching texts. Retain query, sender,
+and case filters across pages; search cursors cannot be used with `messages.list`.
+
+Responses include `items`, `has_more`, `next_cursor` when applicable,
+`pagination_supported: true`, `total_events`, `text_only: true`, and
+`media_opened: false` / `read_receipts_sent: false`. Items expose only `id`,
+`sender_id`, `text`, and `created_at`. Media/nontext events count toward the page
+budget but are not decoded or returned. Empty text/match pages can still have
+more history: follow their cursor. Search covers only the selected conversation,
+not a global index, and cannot recover expired/deleted messages. Nonadvancing
+native pages return `incompatible_protocol` instead of a looping cursor.
 
 `POST /v1/accounts/ACCOUNT_ID/messages/send` accepts:
 
@@ -579,4 +598,5 @@ optional `cursor`, `limit` (1–100, default 40), and `max_conversations` (1–5
 default 3). MCP also requires `account_id`. Each call performs bounded metadata
 and history synchronization and returns incoming text/snap metadata from an
 encrypted durable log. See [INBOX.md](INBOX.md) for cursor semantics, partial
-failures, backlog, and gap limitations. Message history pagination is unchanged.
+failures, backlog, and gap limitations. Inbox polling remains bounded to recent
+windows; use `messages.list` / `messages.search` for older history since 0.6.0.

@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.6.0 — 2026-10-19
+
+- Enabled `messages.list` pagination with encrypted account/conversation-bound
+  cursors, one-hour expiry, and forward-progress checks.
+- Added `messages.search` with literal substring, sender, and case filters;
+  cursors bind those filters and advance through media-only pages.
+- Projected text without decoding snap content, opening media, or marking chats
+  read. Native pagination handles remain inside sealed cursors.
+- Moved native source to stdin alongside the private snapshot, fixing Windows
+  command-line limits while keeping credentials off process arguments.
+- Added cursor isolation/expiry/restart, projector, launcher, and HTTP/MCP
+  fixtures. Live direct/group reads passed across three pages, along with search
+  continuation and unsubmitted direct-text packet preparation.
+
 ## 0.5.0 — 2026-10-19
 
 - Added local `accounts.rename` and `accounts.diagnostics` to HTTP and MCP.
