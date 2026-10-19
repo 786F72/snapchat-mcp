@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
+	"runtime"
 	"testing"
 
 	"github.com/786F72/snapchat-mcp/internal/service"
@@ -20,6 +21,10 @@ func TestServiceTokenPermissions(t *testing.T) {
 	second, err := tokenFile(path, true)
 	if err != nil || first != second {
 		t.Fatal(err)
+	}
+	if runtime.GOOS == "windows" {
+		// Windows ACL rejection is covered by TestWindowsTokenACL.
+		return
 	}
 	if err = os.Chmod(path, 0644); err != nil {
 		t.Fatal(err)

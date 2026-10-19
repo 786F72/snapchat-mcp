@@ -10,15 +10,16 @@ pinned Snapchat web runtime assets and implements a limited set of operations.
 
 | Area | Implemented scope |
 | --- | --- |
-| Accounts | Account isolation, encrypted credential capture, standalone refresh |
+| Accounts | Account isolation, local renaming, encrypted credential capture, standalone refresh, status and diagnostics |
 | Contacts | Confirmed friends, local search/resolution, incoming requests, public identity, exclusions |
 | Inbox | Cursor-based polling for incoming texts and snap metadata; no viewing/read receipts |
-| Conversations | Paginated metadata, cached conversation/group lookup, text history |
+| Conversations | Paginated metadata, cached search and group listing, text history |
 | Texts | Direct EEL and group transport-encrypted sending with durable idempotency |
 | Media | Encrypted PNG/JPEG and H.264/AAC MP4 uploads from bytes or allowed local files |
 | Snaps | Direct EEL and group TLS-only JPEG delivery acknowledged in live tests |
 | Stories | Guarded friends/custom My Story publishing and local publication receipts |
 | MCP | Typed tools forwarding to the same authenticated local API |
+| Deliveries | Paginated local history, status filters, redacted receipts and retry eligibility |
 
 Story deletion, remote story feeds, group management, accepting requests, and
 other catalog entries remain unavailable. Video snap delivery has not been
@@ -72,6 +73,40 @@ Bootstrap stores credentials in the encrypted vault without registering new
 device keys. Implemented API operations then run under Node without browser
 fallback. Refresh or recapture an expired session on `reauth_required`.
 
+For easier setup or reconnecting, keep one signed-in Snapchat tab in the debugging
+browser and run:
+
+```sh
+./bin/snapchat-mcp connect
+./bin/snapchat-mcp status
+./bin/snapchat-mcp status --verify
+./bin/snapchat-mcp doctor
+./bin/snapchat-mcp refresh
+./bin/snapchat-mcp version
+```
+
+`connect` reuses the only local account or creates `personal` when none exists,
+provisions the OS keyring if needed, captures the session, installs missing
+runtime assets, and verifies the session. It does not launch a browser or send
+messages. Select `--account ACCOUNT_ID` or an exact `--label LABEL` when multiple
+accounts exist. Run it again to reconnect after signing in to the debugging
+browser. `--verify=false` captures without the subsequent live verification.
+
+`status` checks local storage only; `captured` does not establish current login
+validity. `status --verify` checks the session against Snapchat. The local check
+is also available as `accounts.session_status` / `snapchat_accounts_session_status`.
+Status responses never contain tokens, cookies, or identity keys.
+
+`doctor` checks Node.js, stored session material, runtime files, and cache counts
+locally. It exits nonzero when prerequisites are missing; a passing check still
+requires live verification. `refresh` renews the captured session without Chrome
+and then verifies it; use `--verify=false` to refresh only. Interactive sign-in
+may still be required when Snapchat rejects renewal.
+
+On Windows, build with `go build -trimpath -o bin/snapchat-mcp.exe .` and use
+`.\bin\snapchat-mcp.exe` in place of `./bin/snapchat-mcp`. Credentials use Windows
+Credential Manager; the local API token has an owner-only Windows ACL.
+
 Persistent storage retains the compatibility namespace `qq_snap`: by default
 `~/.config/qq_snap` on Linux, and the `qq_snap` OS keyring service. Use `--data-dir`
 consistently on `serve`, `mcp`, bootstrap, and diagnostics for another installation.
@@ -118,6 +153,15 @@ never opens media or marks chats read. See [inbox details](docs/INBOX.md).
   including participants and snapshot age.
 - `snapchat_exclusions_add` / `snapchat_exclusions_remove`: edit one UUID atomically.
 - `snapchat_deliveries_get`: inspect one attempt by its stable idempotency key.
+- `snapchat_deliveries_list`: paginate saved attempts, optionally filtering
+  `state` to `pending`, `unknown`, `not_sent`, or `sent`. It never retries sends.
+- `snapchat_conversations_search` / `snapchat_groups_list`: find cached titles,
+  conversation IDs, or participant UUIDs. Optional `participant_id` is an exact
+  filter; synchronize `conversations.list` to refresh stale cache data.
+- `snapchat_accounts_rename`: change a local label without changing the Snapchat
+  profile or captured credentials.
+- `snapchat_accounts_diagnostics`: inspect local connection prerequisites and
+  account-scoped cache counts.
 - `snapchat_media_upload_file`: upload a file without passing base64 to the model.
 
 Local file upload requires an explicit directory on the server host:

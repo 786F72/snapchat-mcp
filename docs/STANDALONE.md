@@ -67,6 +67,12 @@ Unavailable operations return HTTP 501 / MCP `isError` with
 
 ## Checks
 
+Connection and local discovery tools added in 0.4.0/0.5.0 use fixture coverage
+for account selection, incomplete/locked sessions, credential redaction,
+account renaming, cache exclusions, delivery filters, and pagination. Windows
+checks cover exclusive journal locking and owner-only token ACL rejection.
+Local diagnostics never claim that stored credentials are currently accepted.
+
 `make check` uses synthetic fixtures without live credentials.
 
 The opt-in offline native test needs an encrypted local account and valid uploaded

@@ -245,6 +245,10 @@ func (s *Store) GetDelivery(ctx context.Context, account, key string) (any, erro
 	if err != nil {
 		return nil, err
 	}
+	return deliverySummary(key, state, created, raw)
+}
+
+func deliverySummary(key, state, created string, raw []byte) (any, error) {
 	var stored map[string]any
 	if json.Unmarshal(raw, &stored) != nil {
 		return nil, fail("internal_error", "invalid saved receipt", 500)

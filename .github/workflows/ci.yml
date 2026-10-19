@@ -28,3 +28,25 @@ jobs:
         run: |
           make spec
           git diff --exit-code -- docs/openapi.json
+
+  windows:
+    runs-on: windows-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5
+        with:
+          go-version-file: go.mod
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '24'
+      - run: go vet ./...
+      - run: go test ./...
+      - run: go build -trimpath -o bin/snapchat-mcp.exe .
+      - name: JavaScript checks
+        shell: bash
+        run: |
+          node --test internal/service/*.test.mjs
+          node bridge.test.cjs

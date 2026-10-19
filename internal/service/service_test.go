@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"path/filepath"
 	"reflect"
 	"strings"
 	"testing"
@@ -167,6 +168,8 @@ func TestVaultAccountBinding(t *testing.T) {
 }
 func TestMCPHTTPParity(t *testing.T) {
 	s, a, _ := lookupFixture(t)
+	mediaPath := filepath.Join(t.TempDir(), "photo.png")
+	mediaBody, _ := json.Marshal(map[string]any{"path": mediaPath, "mime_type": "image/png"})
 	if _, err := s.db.Exec("INSERT INTO deliveries VALUES(?,?,?,?,?,?)", a.ID, "replay", sendHash("conversation", "text", ""), "sent", []byte(`{"acknowledged":true}`), now()); err != nil {
 		t.Fatal(err)
 	}
@@ -233,7 +236,13 @@ func TestMCPHTTPParity(t *testing.T) {
 		{"deliveries.get", "GET", "/v1/accounts/" + a.ID + "/deliveries/get?idempotency_key=replay", "", map[string]any{"account_id": a.ID, "idempotency_key": "replay"}},
 		{"exclusions.add", "POST", "/v1/accounts/" + a.ID + "/exclusions/add", `{"recipient_id":"` + fixtureExcluded + `"}`, map[string]any{"account_id": a.ID, "recipient_id": fixtureExcluded}},
 		{"exclusions.remove", "POST", "/v1/accounts/" + a.ID + "/exclusions/remove", `{"recipient_id":"` + fixtureBob + `"}`, map[string]any{"account_id": a.ID, "recipient_id": fixtureBob}},
-		{"media.upload_file", "POST", "/v1/accounts/" + a.ID + "/media/upload_file", `{"path":"/media/photo.png","mime_type":"image/png"}`, map[string]any{"account_id": a.ID, "path": "/media/photo.png", "mime_type": "image/png"}},
+		{"media.upload_file", "POST", "/v1/accounts/" + a.ID + "/media/upload_file", string(mediaBody), map[string]any{"account_id": a.ID, "path": mediaPath, "mime_type": "image/png"}},
+		{"accounts.session_status", "GET", "/v1/accounts/" + a.ID + "/accounts/session_status", "", map[string]any{"account_id": a.ID}},
+		{"accounts.diagnostics", "GET", "/v1/accounts/" + a.ID + "/accounts/diagnostics", "", map[string]any{"account_id": a.ID}},
+		{"accounts.rename", "POST", "/v1/accounts/" + a.ID + "/accounts/rename", `{"label":"renamed"}`, map[string]any{"account_id": a.ID, "label": "renamed"}},
+		{"groups.list", "GET", "/v1/accounts/" + a.ID + "/groups/list", "", map[string]any{"account_id": a.ID}},
+		{"conversations.search", "GET", "/v1/accounts/" + a.ID + "/conversations/search?query=fixture", "", map[string]any{"account_id": a.ID, "query": "fixture"}},
+		{"deliveries.list", "GET", "/v1/accounts/" + a.ID + "/deliveries/list?state=sent&limit=2", "", map[string]any{"account_id": a.ID, "state": "sent", "limit": float64(2)}},
 		{"snaps.send", "POST", "/v1/accounts/" + a.ID + "/snaps/send", `{"conversation_id":"conversation","media_id":"fixture-media","idempotency_key":"replay-snap"}`, map[string]any{"account_id": a.ID, "conversation_id": "conversation", "media_id": "fixture-media", "idempotency_key": "replay-snap"}},
 		{"stories.publish", "POST", "/v1/accounts/" + a.ID + "/stories/publish", `{"media_id":"fixture-media","audience":"friends","idempotency_key":"replay-story"}`, map[string]any{"account_id": a.ID, "media_id": "fixture-media", "audience": "friends", "idempotency_key": "replay-story"}},
 		{"stories.publish", "POST", "/v1/accounts/" + a.ID + "/stories/publish", `{"media_id":"fixture-media","audience":"friends","ignore_exclusions":true,"idempotency_key":"replay-story-override"}`, map[string]any{"account_id": a.ID, "media_id": "fixture-media", "audience": "friends", "ignore_exclusions": true, "idempotency_key": "replay-story-override"}},

@@ -1,5 +1,27 @@
 # Changelog
 
+## 0.5.0 — 2026-10-19
+
+- Added local `accounts.rename` and `accounts.diagnostics` to HTTP and MCP.
+- Added cached `conversations.search` and `groups.list`, with title/UUID queries,
+  participant filtering, exclusions, stable UUID pagination, and per-row age.
+- Added `deliveries.list` with state filters, idempotency-key pagination,
+  redacted receipts, and conservative retry eligibility.
+- Added `doctor`, browser-free `refresh`, and `version` / `--version` commands.
+- Added fixtures for isolation, pagination, redaction, rename idempotency,
+  connection diagnostics, CLI errors, and HTTP/MCP parity.
+- Added Windows CI alongside existing Linux race, vet, and OpenAPI drift checks.
+
+## 0.4.0 — 2026-10-19
+
+- Added `connect` for account selection, encrypted session capture, missing
+  runtime installation, and live connection verification; reuse it to reconnect.
+- Added `status` / `status --verify` and local `accounts.session_status` HTTP/MCP
+  inspection with credential redaction and explicit local-versus-live states.
+- Added Windows journal locking and owner-only token ACL handling.
+- Made SQLite restart and HTTP/MCP file-path test fixtures portable to Windows;
+  symlink confinement tests skip only when Windows denies symlink privilege.
+
 ## 0.3.0 — 2026-10-19
 
 - Added `inbox.poll` / `snapchat_inbox_poll` for incoming texts and snap metadata.

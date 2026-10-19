@@ -17,6 +17,8 @@ func enrichOperation(op *Operation) {
 		"limit":             "Maximum page size; omitted values use the operation default.",
 		"recipients":        "Explicit recipient identifiers; duplicates are ignored where applicable. This does not resolve usernames.",
 		"label":             "Local account label; registering a label does not sign in to Snapchat.",
+		"participant_id":    "Exact Snapchat participant UUID; resolve a username with recipients.resolve first.",
+		"state":             "Filter saved delivery attempts by pending, unknown, not_sent, or sent.",
 		"content_base64":    "Base64-encoded PNG/JPEG/MP4 bytes, at most 16 MiB decoded. Prefer media.upload_file for local files.",
 		"message_id":        "Stable server message ID returned by message history or a delivery receipt.",
 		"content_id":        "Content identifier returned by the corresponding Snapchat operation.",
@@ -35,7 +37,7 @@ func enrichOperation(op *Operation) {
 			}
 		}
 		switch name {
-		case "query", "idempotency_key", "recipient_id", "conversation_id", "media_id", "job_id":
+		case "query", "idempotency_key", "recipient_id", "conversation_id", "media_id", "job_id", "participant_id":
 			schema["minLength"] = 1
 			schema["maxLength"] = 128
 		case "path":
@@ -48,6 +50,11 @@ func enrichOperation(op *Operation) {
 			schema["maxLength"] = 16000
 		case "mime_type":
 			schema["enum"] = []string{"image/png", "image/jpeg", "video/mp4"}
+		case "state":
+			schema["enum"] = []string{"pending", "unknown", "not_sent", "sent"}
+		case "label":
+			schema["minLength"] = 1
+			schema["maxLength"] = 120
 		case "max_conversations":
 			schema["minimum"] = 1
 			schema["maximum"] = 5
@@ -63,6 +70,10 @@ func enrichOperation(op *Operation) {
 		}
 		if name == "query" {
 			schema["examples"] = []string{"@sample_user", "Sample Name"}
+			if op.Name == "conversations.search" || op.Name == "groups.list" {
+				schema["description"] = "Case-insensitive substring of a cached conversation title, conversation UUID, or participant UUID; does not resolve usernames."
+				schema["examples"] = []string{"Weekend plans"}
+			}
 		}
 		if name == "idempotency_key" {
 			schema["examples"] = []string{"photo-request-001"}
@@ -72,6 +83,13 @@ func enrichOperation(op *Operation) {
 		}
 		if name == "cursor" && op.Name == "inbox.poll" {
 			schema["description"] = "Opaque account-bound inbox checkpoint. Omit on first poll; always reuse next_cursor, including after empty pages. Survives service restarts."
+		}
+		if name == "cursor" && (op.Name == "conversations.search" || op.Name == "groups.list") {
+			schema["description"] = "Last returned conversation UUID from next_cursor. Keep the same search and participant filters on subsequent pages."
+		}
+		if name == "cursor" && op.Name == "deliveries.list" {
+			schema["description"] = "Last returned idempotency key from next_cursor; retain the same state filter."
+			schema["maxLength"] = 128
 		}
 		op.Properties[name] = schema
 	}

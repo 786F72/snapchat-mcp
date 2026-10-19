@@ -25,6 +25,8 @@ Push with credentials for `786F72` and verify the result:
 gh repo view 786F72/snapchat-mcp --json nameWithOwner,isPrivate,url
 ```
 
-CI runs fixture tests, Go race checks, vet, the build, and an OpenAPI drift check.
+CI runs Linux fixture tests, Go race checks, vet, the build, and an OpenAPI drift
+check, plus a Windows fixture/vet/build/JavaScript job. Windows symlink tests skip
+only when the runner lacks the required privilege.
 It receives no Snapchat credentials and never runs live preparation or sending.
 No release binaries or Snapchat runtime assets are published by CI.

@@ -47,6 +47,9 @@ func tokenFile(path string, create bool) (string, error) {
 			if closeErr != nil {
 				return "", closeErr
 			}
+			if err = protectTokenFile(path); err != nil {
+				return "", err
+			}
 		} else if !errors.Is(err, os.ErrExist) {
 			return "", err
 		}
@@ -55,7 +58,7 @@ func tokenFile(path string, create bool) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	if !info.Mode().IsRegular() || info.Mode().Perm()&0077 != 0 {
+	if !info.Mode().IsRegular() || !privateTokenFile(path, info) {
 		return "", fmt.Errorf("token must be a regular file accessible only by its owner")
 	}
 	b, err := os.ReadFile(path)

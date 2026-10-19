@@ -6,6 +6,79 @@ conversations, text history, direct/group texts and snaps, encrypted media uploa
 guarded My Story publishing, incoming requests, public identity lookup, and own
 story status reads. See [validation and limits](STANDALONE.md).
 
+## Connection status and reconnecting
+
+`GET /v1/accounts/{account_id}/accounts/session_status` and the MCP tool
+`snapchat_accounts_session_status` inspect encrypted local session metadata.
+`state` is `not_connected`, `incomplete`, or `captured`. Responses include
+`credentials_stored`, capture/refresh timestamps, `runtime_installed`, and
+`next_action` (`connect`, `install_runtime`, or `verify_session`). Invalid stored
+timestamps are omitted. A locked vault returns `vault_unavailable`.
+
+The check never contacts Snapchat, and `remote_verified` is always false on this
+endpoint. Captured credentials can expire. Call `accounts.verify_session` for
+live verification, or run `snapchat-mcp status --verify`; a successful CLI check
+returns `state: connected`, `remote_verified: true`, and `next_action: none`.
+This describes the current check only and is not persisted as a login guarantee.
+
+`snapchat-mcp connect` reuses the only local account, or creates `personal` if none
+exists, then captures and verifies the signed-in debugging-browser session.
+It provisions the OS keyring and installs missing pinned runtime assets. Use
+`--account ACCOUNT_ID` or `--label LABEL` for account selection; ambiguous labels
+and multiple unselected accounts fail. The browser is checked before creating
+an account. `--data-dir` and `--cdp` select another installation or debugging
+endpoint. `--verify=false` skips live verification; `--init-keyring=false` requires
+an existing master key. A verification failure exits nonzero while preserving
+the captured session and reporting `remote_verified: false`.
+
+## Local account and discovery tools (0.5.0)
+
+All routes below require the local bearer token and an existing account.
+The corresponding MCP names replace dots with underscores and add `snapchat_`.
+
+| Operation | Method and account-relative route | Inputs |
+| --- | --- | --- |
+| `accounts.rename` | POST `accounts/rename` | Required `label` (trimmed, 1–120 bytes) |
+| `accounts.diagnostics` | GET `accounts/diagnostics` | None |
+| `conversations.search` | GET `conversations/search` | Required `query`; optional `participant_id`, `cursor`, `limit` |
+| `groups.list` | GET `groups/list` | Optional `query`, `participant_id`, `cursor`, `limit` |
+| `deliveries.list` | GET `deliveries/list` | Optional `state`, `cursor`, `limit` |
+
+For example, routes start with `/v1/accounts/{account_id}/`. Rename changes only
+the local label and emits one `account.renamed` event when the value changes.
+It does not change credentials, Snapchat usernames, or profiles.
+
+Diagnostics check Node.js 24+, stored session shape, runtime-file presence, and
+account-scoped counts for cached conversations, exclusions, delivery attempts,
+and inbox events. The result includes `version`, `checks`, `counts`, and
+`ready_for_verification`; `remote_verified` is false because no upstream request
+is made. Vault failures appear as a redacted error check. Runtime-file presence
+does not assert integrity or current upstream compatibility.
+
+Conversation search matches literal, case-insensitive substrings in cached
+titles, conversation IDs, or participant UUIDs. It does not resolve usernames or
+search message text. `participant_id` requires an exact UUID. Groups list returns
+only user-created groups. Both filter conversations containing excluded members,
+return `source: conversation_cache`, and attach `synced_at` and `stale` per item.
+Results sort by conversation UUID; `next_cursor` is the last returned UUID.
+Use unchanged filters on subsequent pages. Empty cache results do not establish
+that there are no remote conversations; synchronize `conversations.list` first.
+
+Delivery history returns the same redacted summaries as `deliveries.get`, sorted
+by idempotency key rather than time. Filter `state` to `pending`, `unknown`,
+`not_sent`, or `sent`. Continue with the returned `next_cursor` and the same
+filter. Only `not_sent` reports `can_retry_same_key: true`; listing does not
+submit, retry, or resolve uncertain delivery. All three list/search operations
+default to 100 results, permit 1–500, and reflect a mutable local cache rather
+than a frozen snapshot.
+
+The CLI adds `doctor` (local diagnostics; nonzero exit for unmet prerequisites),
+`refresh` (renew captured credentials and verify without Chrome; use
+`--verify=false` to skip verification), and `version` / `--version` (print the
+application version). `doctor` and `refresh` support the same account selectors
+and `--data-dir` as `status`. `doctor --verify` is rejected to keep diagnostics
+local; use `status --verify` for an authenticated network check.
+
 ## Run
 
 ```sh

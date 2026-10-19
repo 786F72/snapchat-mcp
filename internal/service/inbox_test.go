@@ -6,6 +6,7 @@ import (
 	"errors"
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 	"net/http/httptest"
+	"path/filepath"
 	"strings"
 	"sync"
 	"testing"
@@ -106,7 +107,7 @@ func TestInboxCursorDeduplicationAndRestart(t *testing.T) {
 	if err := s.db.QueryRow("SELECT file FROM pragma_database_list WHERE name='main'").Scan(&path); err != nil {
 		t.Fatal(err)
 	}
-	reopened, err := Open(strings.TrimSuffix(path, "/service.db"))
+	reopened, err := Open(filepath.Dir(path))
 	if err != nil {
 		t.Fatal(err)
 	}

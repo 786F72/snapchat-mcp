@@ -3,8 +3,11 @@ package service
 import (
 	"context"
 	"encoding/base64"
+	"errors"
 	"os"
 	"path/filepath"
+	"runtime"
+	"syscall"
 	"testing"
 )
 
@@ -33,13 +36,18 @@ func TestMediaRootConfinement(t *testing.T) {
 	if _, err = s.readMediaFile(secret); publicError(err).Code != "file_not_allowed" {
 		t.Fatal(err)
 	}
-	escape := filepath.Join(root, "escape.png")
-	if err = os.Symlink(secret, escape); err != nil {
-		t.Fatal(err)
-	}
-	if raw, err = s.readMediaFile(escape); err == nil || len(raw) != 0 {
-		t.Fatal("symlink escaped the root")
-	}
+	t.Run("escaping symlink", func(t *testing.T) {
+		escape := filepath.Join(root, "escape.png")
+		if err := os.Symlink(secret, escape); err != nil {
+			if runtime.GOOS == "windows" && errors.Is(err, syscall.Errno(1314)) {
+				t.Skip("Windows requires symlink privilege")
+			}
+			t.Fatal(err)
+		}
+		if raw, err := s.readMediaFile(escape); err == nil || len(raw) != 0 {
+			t.Fatal("symlink escaped the root")
+		}
+	})
 	if _, err = s.readMediaFile(root); err == nil {
 		t.Fatal("read a directory")
 	}

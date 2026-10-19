@@ -16,6 +16,8 @@ import (
 	"strings"
 	"syscall"
 	"time"
+
+	"github.com/786F72/snapchat-mcp/internal/service"
 )
 
 func main() {
@@ -28,6 +30,16 @@ func main() {
 }
 
 func run(ctx context.Context, args []string, out io.Writer) error {
+	if len(args) > 0 && (args[0] == "version" || args[0] == "--version") {
+		if len(args) != 1 {
+			return fmt.Errorf("version takes no arguments")
+		}
+		fmt.Fprintln(out, "snapchat-mcp", service.Version)
+		return nil
+	}
+	if len(args) > 0 && (args[0] == "connect" || args[0] == "status" || args[0] == "doctor" || args[0] == "refresh") {
+		return runConnection(ctx, args[0], args[1:], out)
+	}
 	if len(args) > 0 && args[0] == "bootstrap" {
 		return runBootstrap(ctx, args[1:], out)
 	}
@@ -40,7 +52,7 @@ func run(ctx context.Context, args []string, out io.Writer) error {
 		args = args[1:]
 	}
 	if command != "inspect" && command != "friends" && command != "send" && command != "check" && command != "eval" {
-		return errors.New("use serve, mcp, bootstrap, api-spec, import-exclusions, inspect, friends, check, eval, or send; see README.md")
+		return errors.New("use connect, status, doctor, refresh, version, serve, mcp, bootstrap, api-spec, import-exclusions, inspect, friends, check, eval, or send; see README.md")
 	}
 	f := flag.NewFlagSet("snapchat-mcp "+command, flag.ContinueOnError)
 	f.SetOutput(out)
@@ -283,7 +295,7 @@ func openJournal(path, message string) (*Journal, error) {
 	if err = f.Chmod(0600); err != nil {
 		return nil, err
 	}
-	if err = syscall.Flock(int(f.Fd()), syscall.LOCK_EX|syscall.LOCK_NB); err != nil {
+	if err = lockJournalFile(f); err != nil {
 		return nil, errors.New("another sender is using this journal")
 	}
 	h := sha256.Sum256([]byte(message))
